@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<parameters>
+	<parameter 	name="StopTick" displayName="Stop Tick" type="int" 
+				defaultValue="5000" 
+				isReadOnly="false" 
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+				
+	<parameter 	name="randomSeed" displayName="Default Random Seed" type="int" 
+				defaultValue="__NULL__"
+				isReadOnly="false" 
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+				
+	<parameter 	name="Total Comments" displayName="Total Comments" type="int" 
+				defaultValue="1000" 
+				isReadOnly="false" 
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+	
+	<parameter 	name="maxAgents" displayName="Number max agents" type="int" 
+				defaultValue="10" 
+				isReadOnly="false" 
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+				
+	<parameter 	name="Norm Violation Rate" displayName="Norm Violation Rate" type="float" 
+				defaultValue="0.3" 
+				isReadOnly="false" 
+				converter="repast.simphony.parameter.StringConverterFactory$FloatConverter" />
+</parameters>
+
+

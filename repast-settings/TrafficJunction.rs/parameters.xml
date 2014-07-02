@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<parameters>
+
+	<!-- SIMULATOR SETTINGS -->
+	
+	<parameter 	name="randomSeed" displayName="Default Random Seed" type="int"
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="0" />
+	
+	<parameter 	name="SimMap" isReadOnly="false" displayName="Sim: Map" type="int"
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="1" />
+	
+	<parameter 	name="SimNewCarsFreq" isReadOnly="false" displayName="Sim: New cars frequency" type="int" 
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="1" />
+	
+	<parameter 	name="SimNumCarsToEnter" isReadOnly="false" displayName="Sim: Num cars to enter" type="int" 
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="3" />
+	
+	<parameter 	name="SimMaxTicks" isReadOnly="false" displayName="Sim: Max ticks" type="long" 
+				converter="repast.simphony.parameter.StringConverterFactory$LongConverter"
+				defaultValue="50000" />
+	
+	<parameter 	name="SimGUI" isReadOnly="false" displayName="Sim: Use GUI" type="boolean" 
+				converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+				defaultValue="true" />
+	
+	<parameter 	name="SimNormViolationRate" isReadOnly="false" displayName="Sim: Norm violation rate" type="double" 
+				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+				defaultValue="0.3" />
+	
+	<!-- NORM SYNTHESIS SETTINGS -->
+	
+	<parameter 	name="NormSynthesisExample" isReadOnly="false" displayName="NSM: Norm synthesis example" type="int"
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="1" />
+				
+	<parameter 	name="NormSynthesisStrategy" isReadOnly="false" displayName="NSM: Norm synthesis strategy (CUSTOM/IRON/SIMON/XSIMON)" type="int"
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="2" />
+
+	<parameter 	name="NormGeneralisationMode" isReadOnly="false" displayName="NSM: Norm generalisation mode (SHALLOW/DEEP)" type="int"
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="1" />
+
+	<parameter 	name="NormGeneralisationStep" isReadOnly="false" displayName="NSM: Norm generalisation step" type="int"
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="1" />
+	
+	<parameter 	name="NormsGenEffThreshold" isReadOnly="false" displayName="NSM: Norm gen. eff. threshold" type="double" 
+				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+				defaultValue="0.1" />
+	
+	<parameter 	name="NormsGenNecThreshold" isReadOnly="false" displayName="NSM: Norm gen. nec. threshold" type="double" 
+				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+				defaultValue="0.1" />
+	
+	<parameter 	name="NormsSpecEffThreshold" isReadOnly="false" displayName="NSM: Norm spec. eff. threshold" type="double" 
+				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+				defaultValue="0.3" />
+	
+	<parameter 	name="NormsSpecNecThreshold" isReadOnly="false" displayName="NSM: Norm spec. nec. threshold" type="double" 
+				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+				defaultValue="0.15" />
+				
+	<parameter 	name="NormsPerfRangeSize" isReadOnly="false" displayName="NSM: Norms performance range size" type="int" 
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="100" />
+				
+	<parameter 	name="NormsDefaultUtility" isReadOnly="false" displayName="NSM: Norms default utility" type="double" 
+				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+				defaultValue="0.5" />
+				
+	<parameter 	name="NumTicksToConverge" isReadOnly="false" displayName="NSM: Num. ticks to converge" type="long" 
+				converter="repast.simphony.parameter.StringConverterFactory$LongConverter"
+				defaultValue="8000" />
+				
+	<parameter 	name="NumExec" isReadOnly="false" displayName="NSM: Num. execution" type="int" 
+				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+				defaultValue="2" />
+				
+</parameters>

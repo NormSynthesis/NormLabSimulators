@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<Agents>
+    <Agent>
+        <quantity>7</quantity>
+        <name>moderate</name>
+        <correct>0.8</correct>
+        <insult>0.0</insult>
+        <spam>0.0</spam>
+        <violent>0.0</violent>
+        <porn>0.0</porn>
+        <uploadProbability>0.4</uploadProbability>
+        <secForum>0.5</secForum>
+        <secTheReporter>0.1</secTheReporter>
+        <secPhotoVideo>0.4</secPhotoVideo>
+        <viewMode>0</viewMode>
+        <distributionMode>0</distributionMode>
+        <complaintInsult>1.0</complaintInsult>
+        <complaintSpam>1.0</complaintSpam>
+        <complaintViolent>1.0</complaintViolent>
+        <complaintPorn>1.0</complaintPorn>
+        <populationName>7moderates_3spammers</populationName>
+    </Agent>
+    <Agent>
+        <quantity>3</quantity>
+        <name>spammer</name>
+        <correct>0.0</correct>
+        <insult>0.0</insult>
+        <spam>0.9</spam>
+        <violent>0.0</violent>
+        <porn>0.0</porn>
+        <uploadProbability>1.0</uploadProbability>
+        <secForum>0.5</secForum>
+        <secTheReporter>0.4</secTheReporter>
+        <secPhotoVideo>0.1</secPhotoVideo>
+        <viewMode>0</viewMode>
+        <distributionMode>0</distributionMode>
+        <complaintInsult>0.0</complaintInsult>
+        <complaintSpam>0.0</complaintSpam>
+        <complaintViolent>0.0</complaintViolent>
+        <complaintPorn>0.0</complaintPorn>
+        <populationName>7moderates_3spammers</populationName>
+    </Agent>
+</Agents>

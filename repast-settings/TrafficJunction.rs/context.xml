@@ -1,0 +1,4 @@
+<context id="TrafficJunction" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://repast.org/scenario/context">
+  <projection id="trafficMap" type="grid"/>
+  <projection id="trafficMapPositions" type="value layer"/>
+</context>
