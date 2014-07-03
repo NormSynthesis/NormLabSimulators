@@ -69,6 +69,8 @@ public class TrafficNSExample3_NSAgent implements TrafficNormSynthesisAgent {
 	 * @throws IncorrectSetupException 
 	 */
 	public void step() throws IncorrectSetupException {
+		this.addedNorms.clear();
+		this.removedNorms.clear();
 
 		/* Execute strategy and obtain new normative system */
 		NormativeSystem newNormativeSystem = nsm.executeStrategy();
