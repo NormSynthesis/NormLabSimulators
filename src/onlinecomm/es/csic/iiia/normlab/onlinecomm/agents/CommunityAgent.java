@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import repast.simphony.context.Context;
+import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
@@ -112,7 +113,10 @@ public class CommunityAgent implements EnvironmentAgent {
 		id = contextData.getNumAgents();
 		
 		this.agentContext = new CommunityAgentContext(this);
-		this.reasoner = new CommunityAgentReasoner(predDomains, contextData);
+		
+		// JAVI: Optimisation to avoid GC overhead limit error in huge populations
+//		this.reasoner = new CommunityAgentReasoner(predDomains, contextData);
+		this.reasoner = CommunityNormSynthesisAgent.getAgentsReasoner();
 	}
 	
 	/**
@@ -175,7 +179,6 @@ public class CommunityAgent implements EnvironmentAgent {
 					}
 					doUpload(content);
 					contextData.setNumSocialNetworkContents(contextData.getNumSocialNetworkContents() + 1);
-					//System.out.println("Contenido = "+contextData.getNumSocialNetworkContents());
 				}	
 			}
 		}
@@ -190,6 +193,9 @@ public class CommunityAgent implements EnvironmentAgent {
 	@SuppressWarnings("unchecked")
 	private void doUpload(IContent content){
 		int positionContent = 0;
+		
+		double tick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		content.setTick(tick);
 		
 		if(content != null){
 			context = ContextUtils.getContext(this);
@@ -300,28 +306,36 @@ public class CommunityAgent implements EnvironmentAgent {
 	 */
 	public void viewAndComplaintContent(){
 		//System.out.println("step view and complaint");
-		int i = 0;
-		while(i < 5){
-			//Erase the actual view and complaint lists if the actualAgent is the first one.
-			List<IContent> actualViewList = contextData.getActualViewList();
+//		int i = 0;
+//		while(i < 5) {
 			
-			//1.- View some upload content
-			IContent content = viewContent();
-			
-			//1.1.- Update the actual view list.
-			if(content != null){ // May be that the agent doesn't view anything...
-				actualViewList.add(content);
-			
-				//2.- Complaint or not about the content visited
-				boolean complaintDone = complaintContent(content);
-				boolean normViolated = (content.getViolatedNorm() != null);
-				boolean contentIsNotRegulated = !isContentRegulated(content);
+			// TODO: He puesto esto para que no vean tantos contenidos
+//			int randomNum = contextData.nextIntRandom(100);
+//			double uploadContentPercentage = 10;
+//			
+//			if(randomNum <= uploadContentPercentage){
+
+				//Erase the actual view and complaint lists if the actualAgent is the first one.
+				List<IContent> actualViewList = contextData.getActualViewList();
 				
-				//3.- Update the graphic values if a complaint is done.
-				updateGraphicValues(complaintDone, normViolated, contentIsNotRegulated);
-			}
-			i++;
-		}
+				//1.- View some upload content
+				IContent content = viewContent();
+				
+				//1.1.- Update the actual view list.
+				if(content != null){ // May be that the agent doesn't view anything...
+					actualViewList.add(content);
+				
+					//2.- Complaint or not about the content visited
+					boolean complaintDone = complaintContent(content);
+					boolean normViolated = (content.getViolatedNorm() != null);
+					boolean contentIsNotRegulated = !isContentRegulated(content);
+					
+					//3.- Update the graphic values if a complaint is done.
+					updateGraphicValues(complaintDone, normViolated, contentIsNotRegulated);
+				}
+//			}
+//			i++;
+//		}
 		
 	}
 	

@@ -7,13 +7,15 @@ import es.csic.iiia.nsm.NormSynthesisMachine;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.config.DomainFunctions;
 import es.csic.iiia.nsm.config.Goal;
+import es.csic.iiia.nsm.metrics.NormSynthesisMetrics;
+import es.csic.iiia.nsm.net.norm.NetworkNodeState;
 import es.csic.iiia.nsm.net.norm.NormativeNetwork;
 import es.csic.iiia.nsm.norm.Norm;
 import es.csic.iiia.nsm.norm.generation.Conflict;
 import es.csic.iiia.nsm.norm.generation.NormGenerationMachine;
 import es.csic.iiia.nsm.norm.generation.cbr.CBRNormGenerationMachine;
 import es.csic.iiia.nsm.norm.reasoning.NormReasoner;
-import es.csic.iiia.nsm.norm.refinement.xsimon.NormAttribute;
+import es.csic.iiia.nsm.norm.refinement.lion.NormAttribute;
 
 /**
  * The operators that the SIMON strategy uses to perform norm synthesis
@@ -46,14 +48,17 @@ public class TrafficNSExample5_NSOperators {
 	 * @param 	nsm the norm synthesis machine
 	 */
 	public TrafficNSExample5_NSOperators(TrafficNSExample5_NSStrategy strategy, 
-			NormReasoner normReasoner, NormSynthesisMachine nsm) {
+			NormReasoner normReasoner, NormSynthesisMachine nsm, 
+			NormSynthesisMetrics nsMetrics) {
 		
 		this.strategy = strategy;
 		this.normReasoner = normReasoner;
 		this.dmFunctions = nsm.getDomainFunctions();
-		this.genMachine = new CBRNormGenerationMachine(nsm, normReasoner);
 		this.predDomains = nsm.getPredicatesDomains();
 		this.normativeNetwork = nsm.getNormativeNetwork();
+		
+		this.genMachine = new CBRNormGenerationMachine(this.normativeNetwork,
+				normReasoner, strategy, nsm.getRandom(), nsMetrics);
 	}
 
 	/**
@@ -97,7 +102,7 @@ public class TrafficNSExample5_NSOperators {
 		for(Norm norm : normsToActivate)	{
 			this.activate(norm);
 			this.normativeNetwork.getUtility(norm).reset();
-			this.normativeNetwork.removeAttribute(norm, NormAttribute.Generalisable);
+			this.normativeNetwork.removeAttribute(norm, NormAttribute.GENERALISABLE);
 		}
 	}
 
@@ -125,7 +130,7 @@ public class TrafficNSExample5_NSOperators {
 	 * @param norm the norm to activate
 	 */	
 	public void activate(Norm norm) {
-		normativeNetwork.activate(norm);
+		this.normativeNetwork.setState(norm, NetworkNodeState.ACTIVE);
 
 		/* Add norm to the norm engine */
 		this.normReasoner.addNorm(norm);

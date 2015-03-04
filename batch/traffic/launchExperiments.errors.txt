@@ -1,0 +1,1 @@
+/home/javi/Proyectos/Eclipse/NormLabSimulators/output/traffic/logs/2014-11-05-03-33-26-|TRAFFIC_SIM|Map-1|NCarFr-1|NCarEm-4|Seed-112l|MaxTicks-35000l|ViolRate-0.3|IRON|GenEffThr-0.0|GenNecThr-0.0|SpecEffThr-0.026|SpecNecThr-0.026|UWdwSz-150|ConvTck-|WCol-4|WNoCol-1|WFlTraff-2|-Exec112.log

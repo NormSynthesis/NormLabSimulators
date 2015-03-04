@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<Experiment>
+    <PopulationURL>batch/onlinecomm/populations/Population10.xml</PopulationURL>
+    <TotalComments>5000</TotalComments>
+    <NumberAgents>100</NumberAgents>
+    <NormViolationRate>0.5</NormViolationRate>
+    <StopTick>5000</StopTick>
+</Experiment>

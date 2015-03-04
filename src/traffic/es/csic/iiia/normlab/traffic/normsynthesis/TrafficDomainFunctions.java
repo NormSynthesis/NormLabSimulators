@@ -23,8 +23,8 @@ import es.csic.iiia.normlab.traffic.car.context.TrafficStateManager.StateType;
 import es.csic.iiia.normlab.traffic.config.Gcols;
 import es.csic.iiia.normlab.traffic.factory.CarContextFactory;
 import es.csic.iiia.normlab.traffic.norms.tree.TrafficPredicateInconsistencies;
-import es.csic.iiia.nsm.agent.AgentAction;
-import es.csic.iiia.nsm.agent.AgentContext;
+import es.csic.iiia.nsm.agent.EnvironmentAgentAction;
+import es.csic.iiia.nsm.agent.EnvironmentAgentContext;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
 import es.csic.iiia.nsm.agent.language.TaxonomyOfTerms;
@@ -47,6 +47,7 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	// Attributes
 	//---------------------------------------------------------------------------
 
+	private CarContextFactory carContextFactory;
 	private PredicatesDomains predDomains;
 
 	//---------------------------------------------------------------------------
@@ -56,15 +57,11 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	/**
 	 * Constructor
 	 */
-	public TrafficDomainFunctions() {
-		this.createPredicatesDomains();
-	}
-
-	/**
-	 * Returns the traffic predicates, together with their respective domains
-	 */
-	public PredicatesDomains getPredicatesDomains() {
-		return this.predDomains;
+	public TrafficDomainFunctions(PredicatesDomains predDomains,
+			CarContextFactory carContextFactory) {
+		
+		this.carContextFactory = carContextFactory;
+		this.predDomains = predDomains;
 	}
 
 	/**
@@ -77,7 +74,7 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	@Override
 	public boolean isConsistent(SetOfPredicatesWithTerms agentContext) {
 		Map<Integer, List<String>> inconsistencies = TrafficPredicateInconsistencies.getAll();
-		
+
 		/* Check that the term in each predicate belongs to the predicate's domain */
 		for(String predicate : agentContext.getPredicates()) {
 			for(String term : agentContext.getTerms(predicate)) {
@@ -117,11 +114,11 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	 * @return a description of the car's local context 
 	 */
 	@Override
-	public AgentContext agentContextFunction(long carId, View view) {
+	public EnvironmentAgentContext agentContextFunction(long carId, View view) {
 		TrafficView tView = (TrafficView)view;
-		CarContext context = CarContextFactory.getCarContextIn(tView,
+		CarContext context = carContextFactory.getCarContextIn(tView,
 				carId, CarContext.Type.Front);
-		
+
 		return context;
 	}
 
@@ -135,10 +132,10 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	 * @return the actions that the car performed
 	 */
 	@Override
-	public List<AgentAction> agentActionFunction(long carId, 
+	public List<EnvironmentAgentAction> agentActionFunction(long carId, 
 			ViewTransition viewStream) {
-		
-		List<AgentAction> actions = new ArrayList<AgentAction>();
+
+		List<EnvironmentAgentAction> actions = new ArrayList<EnvironmentAgentAction>();
 
 		/* Get the position of the car in the previous and the current view */
 		TrafficView pView = (TrafficView)viewStream.getView(-1);
@@ -162,7 +159,7 @@ public class TrafficDomainFunctions implements DomainFunctions {
 			actions.add(CarAction.Go);
 		}
 		return actions;
-			}
+	}
 
 	/**
 	 * Returns a list with the "new" conflicts in the view stream.
@@ -171,9 +168,8 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	 * @return a list of the non regulated conflicts
 	 */
 	@Override
-	public List<Conflict> getNonRegulatedConflicts(Goal goal, 
-			ViewTransition vTrans) {
-		
+	public List<Conflict> getConflicts(Goal goal,	ViewTransition vTrans) {
+
 		List<Conflict> conflicts = new ArrayList<Conflict>();
 		View viewTimeT = vTrans.getView(0);
 		TrafficView tfView = (TrafficView) viewTimeT;
@@ -188,13 +184,13 @@ public class TrafficDomainFunctions implements DomainFunctions {
 				 * of the cars in the collision and randomly choose one of them
 				 * to generate norms for it */
 				if(TrafficStateManager.getType(desc) == StateType.Collision) {
-					
+
 					List<Long> ids = TrafficStateManager.getCarIds(desc);
 					List<Long> conflictingAgents = new ArrayList<Long>();
 
 					/* Randomly choose the conflicting agent */
-//					Random rnd = Main.getRandom();
-//					conflictingAgents.add(ids.get(rnd.nextInt(ids.size())));
+					//					Random rnd = Main.getRandom();
+					//					conflictingAgents.add(ids.get(rnd.nextInt(ids.size())));
 					conflictingAgents.addAll(ids);
 
 					/* Generate new conflict, adding the onflicting agent */
@@ -208,6 +204,24 @@ public class TrafficDomainFunctions implements DomainFunctions {
 		return conflicts;
 	}
 
+	/**
+	 * 
+	 */
+	@Override
+	public List<Conflict> getConflicts(Goal goal, ViewTransition viewTransition,
+			long agentId) {
+
+		List<Conflict> allConflicts = this.getConflicts(goal, viewTransition);
+		List<Conflict> agentConflicts = new ArrayList<Conflict>();
+
+		for(Conflict conflict : allConflicts) {
+			if(conflict.getConflictingAgents().contains(agentId)) {
+				agentConflicts.add(conflict);
+			}
+		}
+		return agentConflicts;
+	}
+	
 	/**
 	 * Returns true if the given car has collided in a view with any other car
 	 * 
@@ -229,7 +243,7 @@ public class TrafficDomainFunctions implements DomainFunctions {
 
 				if(TrafficStateManager.getType(desc) == StateType.Collision ||
 						TrafficStateManager.getType(desc) == StateType.ViolCollision) {
-					
+
 					agentIds = TrafficStateManager.getCarIds(desc);
 					if(agentIds.contains(agentId))
 						return true;
@@ -243,82 +257,82 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	// Private methods
 	//---------------------------------------------------------------------------
 
-	/**
-	 * Creates the predicate and their domains for the traffic scenario
-	 */
-	private void createPredicatesDomains() {
-
-		/* Predicate "left" domain */
-		TaxonomyOfTerms leftPredTaxonomy = new TaxonomyOfTerms("l");
-		leftPredTaxonomy.addTerm("*");
-		leftPredTaxonomy.addTerm("<");
-		leftPredTaxonomy.addTerm(">");
-		leftPredTaxonomy.addTerm("-");
-		leftPredTaxonomy.addRelationship("<", "*");
-		leftPredTaxonomy.addRelationship(">", "*");
-		leftPredTaxonomy.addRelationship("-", "*");
-
-		/* Predicate "front" domain*/
-		TaxonomyOfTerms frontPredTaxonomy = new TaxonomyOfTerms("f", leftPredTaxonomy);
-		frontPredTaxonomy.addTerm("^");
-		frontPredTaxonomy.addRelationship("^", "*");
-
-		/* Predicate "right" domain*/
-		TaxonomyOfTerms rightPredTaxonomy = new TaxonomyOfTerms("r", leftPredTaxonomy);
-		rightPredTaxonomy.addTerm("w");
-		rightPredTaxonomy.addRelationship("w", "*");
-
-		this.predDomains = new PredicatesDomains();
-		this.predDomains.addPredicateDomain("l", leftPredTaxonomy);
-		this.predDomains.addPredicateDomain("f", frontPredTaxonomy);
-		this.predDomains.addPredicateDomain("r", rightPredTaxonomy);
-	}
+//	/**
+//	 * Creates the predicate and their domains for the traffic scenario
+//	 */
+//	private void createPredicatesDomains() {
+//
+//		/* Predicate "left" domain */
+//		TaxonomyOfTerms leftPredTaxonomy = new TaxonomyOfTerms("l");
+//		leftPredTaxonomy.addTerm("*", 6);
+//		leftPredTaxonomy.addTerm("<", 5);
+//		leftPredTaxonomy.addTerm(">", 4);
+//		leftPredTaxonomy.addTerm("-", 3);
+//		leftPredTaxonomy.addRelationship("<", "*");
+//		leftPredTaxonomy.addRelationship(">", "*");
+//		leftPredTaxonomy.addRelationship("-", "*");
+//
+//		/* Predicate "front" domain*/
+//		TaxonomyOfTerms frontPredTaxonomy = new TaxonomyOfTerms("f", leftPredTaxonomy);
+//		frontPredTaxonomy.addTerm("^", 2);
+//		frontPredTaxonomy.addRelationship("^", "*");
+//
+//		/* Predicate "right" domain*/
+//		TaxonomyOfTerms rightPredTaxonomy = new TaxonomyOfTerms("r", leftPredTaxonomy);
+//		rightPredTaxonomy.addTerm("w", 1);
+//		rightPredTaxonomy.addRelationship("w", "*");
+//
+//		this.predDomains = new PredicatesDomains();
+//		this.predDomains.addPredicateDomain("l", leftPredTaxonomy);
+//		this.predDomains.addPredicateDomain("f", frontPredTaxonomy);
+//		this.predDomains.addPredicateDomain("r", rightPredTaxonomy);
+//	}
 
 	/**
 	 * 
 	 */
 	@Override
-  public JPanel getNormDescriptionPanel(Norm norm) {
-//	  JPanel normDescPanel = new JPanel();
-//    ImageIcon icon = new ImageIcon("misc/traffic/icons/car.png");
-//    
-//    
-//    GroupLayout layout = new javax.swing.GroupLayout(normDescPanel);
-//    normDescPanel.setLayout(layout);
-//    
-//    JLabel lblIcon = new JLabel();
-//    lblIcon.setIcon(icon);
-//    
-//    layout.addLayoutComponent(lblIcon);
-//	  return normDescPanel;
-//	  
-		
-		JPanel panel;
-		
-	  try {
-	  	panel = new JPanel(new BorderLayout()) {
-	    	
-	      private static final long serialVersionUID = 5978138542151276211L;
-			
-	      final BufferedImage bi = ImageIO.read(new File("misc/traffic/icon/bluecar.png"));
-	      @Override
-	      public Dimension getPreferredSize() {
-	          return new Dimension(bi.getWidth(), bi.getHeight());
-	      }
+	public JPanel getNormDescriptionPanel(Norm norm) {
+		//	  JPanel normDescPanel = new JPanel();
+		//    ImageIcon icon = new ImageIcon("misc/traffic/icons/car.png");
+		//    
+		//    
+		//    GroupLayout layout = new javax.swing.GroupLayout(normDescPanel);
+		//    normDescPanel.setLayout(layout);
+		//    
+		//    JLabel lblIcon = new JLabel();
+		//    lblIcon.setIcon(icon);
+		//    
+		//    layout.addLayoutComponent(lblIcon);
+		//	  return normDescPanel;
+		//	  
 
-	      @Override
-	      protected void paintComponent(Graphics g) {
-	          super.paintComponent(g);
-	          Graphics2D g2 = (Graphics2D) g;
-	          g2.rotate(Math.PI / 4, bi.getWidth() / 2, bi.getHeight() / 2);
-	          g2.drawImage(bi, 0, 0, null);
-	      }
-	    };
-    }
-	  catch (IOException e) {
-	    return null;
-    }
-	  
-	  return panel;
-  }
+		JPanel panel;
+
+		try {
+			panel = new JPanel(new BorderLayout()) {
+
+				private static final long serialVersionUID = 5978138542151276211L;
+
+				final BufferedImage bi = ImageIO.read(new File("misc/traffic/icon/bluecar.png"));
+				@Override
+				public Dimension getPreferredSize() {
+					return new Dimension(bi.getWidth(), bi.getHeight());
+				}
+
+				@Override
+				protected void paintComponent(Graphics g) {
+					super.paintComponent(g);
+					Graphics2D g2 = (Graphics2D) g;
+					g2.rotate(Math.PI / 4, bi.getWidth() / 2, bi.getHeight() / 2);
+					g2.drawImage(bi, 0, 0, null);
+				}
+			};
+		}
+		catch (IOException e) {
+			return null;
+		}
+
+		return panel;
+	}
 }

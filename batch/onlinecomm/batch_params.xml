@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><sweep runs="1">
+	<!-- SIMULATOR SETTINGS -->
+	
+	<parameter constant_type="number" name="randomSeed" type="constant" value="0"/>
+	<parameter constant_type="number" name="Total Comments" type="constant" value="5000"/>
+	<parameter constant_type="number" name="maxAgents" type="constant" value="100"/>
+	<parameter constant_type="float" name="Norm Violation Rate" type="constant" value="0.3"/>
+	<parameter constant_type="number" name="StopTick" type="constant" value="5000"/>
+	<parameter constant_type="long" name="ContentsQueueSize" type="constant" value="1000.0"/>
+	<parameter constant_type="double" name="conflictThreshold" type="constant" value="0.5"/>
+	<parameter constant_type="long" name="ContentsNumViewsToClassify" type="constant" value="10"/>
+
+				
+	<!-- NORM SYNTHESIS SETTINGS -->
+
+	<parameter constant_type="int" name="NormSynthesisStrategy" type="constant" value="1"/>
+	<parameter constant_type="int" name="NormGeneralisationMode" type="constant" value="1.0"/>
+	<parameter constant_type="int" name="NormGeneralisationStep" type="constant" value="1.0"/>
+	<parameter constant_type="double" name="NormsGenEffThreshold" type="constant" value="-0.9"/>
+	<parameter constant_type="double" name="NormsGenNecThreshold" type="constant" value="-0.9"/>
+	<parameter constant_type="double" name="NormsSpecEffThreshold" type="constant" value="0.05"/>
+	<parameter constant_type="double" name="NormsSpecNecThreshold" type="constant" value="0.1"/>
+	<parameter constant_type="double" name="NormsSpecThresholdEpsilon" type="constant" value="0.025"/>
+	<parameter constant_type="int" name="NormsMinEvaluationsToClassify" type="constant" value="20.0"/>
+	<parameter constant_type="int" name="NormsPerfRangeSize" type="constant" value="100.0"/>
+	<parameter constant_type="double" name="NormsDefaultUtility" type="constant" value="0.5"/>
+	<parameter constant_type="long" name="NumTicksToConverge" type="constant" value="1000.0"/>
+	<parameter constant_type="boolean" name="NormsWithUserId" type="constant" value="true"/>
+	<parameter constant_type="boolean" name="NormGenerationReactive" type="constant" value="true"/>	
+	
+</sweep>

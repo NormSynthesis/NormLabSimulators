@@ -52,8 +52,16 @@ public class CommunityWatcher implements Sensor {
 		for(IContent c : actualUploadList){
 			actualUploads.add(c);
 		}
+		
+		/* TODO: Aqui hay que mirar como se hace lo del fake upload en 
+		 * CommunityDomainFunctions.getConflicts() y anyadir a actualUploads aquellos
+		 * contenidos que han sido vistos en este tick (con el id del propietario que lo
+		 * subio en su momento, fuera cuando fuera (presencia fake)
+		 */
+		
 		for(IContent c : actualViewList){
 			actualViews.add(c);
+			actualUploads.add(c); // TODO: Fake presence del uploader del content
 		}
 		for(IContent c : actualComplaintList){
 			actualComplaints.add(c);

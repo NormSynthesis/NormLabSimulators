@@ -12,6 +12,7 @@ import es.csic.iiia.normlab.traffic.car.CarReasoner;
 import es.csic.iiia.normlab.traffic.car.CarReasonerState;
 import es.csic.iiia.normlab.traffic.car.context.CarContext;
 import es.csic.iiia.normlab.traffic.factory.CarContextFactory;
+import es.csic.iiia.normlab.traffic.factory.TrafficFactFactory;
 import es.csic.iiia.normlab.traffic.map.CarMap;
 import es.csic.iiia.normlab.traffic.utils.Direction;
 import es.csic.iiia.normlab.traffic.utils.Speed;
@@ -34,42 +35,50 @@ public class Car implements TrafficElement, EnvironmentAgent
 	// Attributes
 	//-----------------------------------------------------------------
 	
-	private PredicatesDomains predDomains;
+	protected PredicatesDomains predDomains;
+	protected TrafficFactFactory factFactory;
+	protected CarContextFactory contextFactory;
 	
-	private CarReasoner reasoner;
-	private CarPosition position;
-	private CarContext context;
-	private CarColor color;
+	protected CarReasoner reasoner;
+	protected CarPosition position;
+	protected CarContext context;
+	protected CarColor color;
 
-	private CarReasonerState reasonerState;
-	private Turn turn;
+	protected CarReasonerState reasonerState;
+	protected Turn turn;
 
 	//	private Action lastPerformedAction;
-	private CarAction nextAction;
+	protected CarAction nextAction;
 
-	private boolean hasTurned;
-	private boolean collided; 
+	protected boolean hasTurned;
+	protected boolean collided; 
 
-	private Norm normToViolate;
-	private Norm normToApply;
+	protected Norm normToViolate;
+	protected Norm normToApply;
 	
-	private short id;
-	private int defaultSpeed;
-	private int speed;
+	protected short id;
+	protected int defaultSpeed;
+	protected int speed;
 
-	private int ticksCollided;
-	private int expectedArrivalTicks;
-	private int numTicksTraveling;
+	protected int ticksCollided;
+	protected int expectedArrivalTicks;
+	protected int numTicksTraveling;
 
 	//-----------------------------------------------------------------
 	// Constructors
 	//-----------------------------------------------------------------
-
+	
 	/**
 	 * This constructor chooses a random start point for the car
 	 */
-	public Car(short id, boolean withReasoner, PredicatesDomains predDomains) {
+	public Car(short id, boolean withReasoner, PredicatesDomains predDomains,
+			CarContextFactory contextFactory, TrafficFactFactory factFactory) {
+		
+		this.contextFactory = contextFactory;
+		this.factFactory = factFactory;
+		this.predDomains = predDomains;
 		this.id = id;
+		
 		this.hasTurned = false;
 		this.collided = false;
 		this.ticksCollided = 0;
@@ -78,9 +87,7 @@ public class Car implements TrafficElement, EnvironmentAgent
 		this.speed = this.defaultSpeed;
 		this.color = new CarColor();
 		
-		this.predDomains = predDomains;
-		this.reasoner = new CarReasoner(predDomains);
-
+		this.reasoner = new CarReasoner(predDomains, factFactory);
 		this.reasonerState = CarReasonerState.NoNormActivated;
 		this.nextAction = CarAction.Go;
 
@@ -91,6 +98,7 @@ public class Car implements TrafficElement, EnvironmentAgent
 		//			this.reasoner = new CarReasoner(this);
 		//		}
 	}
+
 
 	//-----------------------------------------------------------------
 	// Scheduled methods
@@ -106,6 +114,7 @@ public class Car implements TrafficElement, EnvironmentAgent
 		this.execute(nextAction);
 		this.turn(carMap);
 	}
+	
 	/**
 	 * Reason about the current situation. Then decide what to do
 	 */
@@ -233,13 +242,8 @@ public class Car implements TrafficElement, EnvironmentAgent
 	/**
 	 * Generates the car scope in the current moment
 	 */
-	public CarContext generateScope(CarMap carMap)
-	{
-		CarContext context = CarContextFactory.getCarContextIn(carMap, id, CarContext.Type.Front);
-		
-		//this.leftSideScope  = CarScope.generate(carMap.getMap(), this, CarScope.Type.Left);
-		//this.rightSideScope  = CarScope.generate(carMap.getMap(), this, CarScope.Type.Right);
-
+	public CarContext generateScope(CarMap carMap) {
+		CarContext context = contextFactory.getCarContextIn(carMap, id, CarContext.Type.Front);
 		return context;
 	}
 
@@ -531,7 +535,8 @@ public class Car implements TrafficElement, EnvironmentAgent
 		CarPosition pos = new CarPosition(position.getX(), position.getY(),
 				position.getDirection());
 
-		Car car = new Car(this.id, false, predDomains);
+		Car car = new Car(this.id, false, predDomains, contextFactory,
+				factFactory);
 		car.init(pos);
 
 		car.setReasonerState(this.reasonerState);

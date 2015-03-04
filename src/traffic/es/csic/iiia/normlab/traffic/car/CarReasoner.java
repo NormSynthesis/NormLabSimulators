@@ -7,6 +7,7 @@ import java.util.Random;
 import es.csic.iiia.normlab.traffic.TrafficSimulator;
 import es.csic.iiia.normlab.traffic.agent.Car;
 import es.csic.iiia.normlab.traffic.car.context.CarContext;
+import es.csic.iiia.normlab.traffic.factory.TrafficFactFactory;
 import es.csic.iiia.normlab.traffic.normsynthesis.TrafficNormSynthesisSettings;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
@@ -26,6 +27,7 @@ public class CarReasoner extends NormEngine {
 	// Attributes																															
 	//------------------------------------------------------------
 
+	private TrafficFactFactory factFactory;
 	private CarReasonerState state;			// the state of the agent's reasoner
 	private Norm normToComplyWith;			// the last norm the agent complied with
 	private Norm normToInfringe;				// the last infringed norm
@@ -39,9 +41,12 @@ public class CarReasoner extends NormEngine {
 	/**
 	 * Constructor
 	 */
-	public CarReasoner(PredicatesDomains predDomains) {
+	public CarReasoner(PredicatesDomains predDomains,
+			TrafficFactFactory factFactory) {
+		
 		super(predDomains);
 
+		this.factFactory = factFactory;
 		this.state = CarReasonerState.NoNormActivated;
 		this.casualStop = false;
 	}
@@ -75,8 +80,7 @@ public class CarReasoner extends NormEngine {
 		this.reset();
 
 		/* Add world facts */
-		SetOfPredicatesWithTerms predicates =  TrafficSimulator.getFactFactory()
-				.generatePredicates(context);
+		SetOfPredicatesWithTerms predicates =  factFactory.generatePredicates(context);
 		this.addFacts(predicates);
 
 		/* Collided cars remain stopped */

@@ -71,7 +71,7 @@ public class Matrix<T> implements CloneablePublic<Matrix<T>>{
 			matrix.add(xList);
 		}
 	}
-	
+
 	private void setMatrix(ArrayList<List<T>> m){
 		this.matrix = m;
 	}
@@ -110,7 +110,7 @@ public class Matrix<T> implements CloneablePublic<Matrix<T>>{
 
 	// create identical copy
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-  @Override
+	@Override
 	public Matrix<T> getClone(boolean deepCopy){
 		ArrayList<List<T>> cloneList = new ArrayList<List<T>>();
 		for(int y = 0; y<dimY; y++){
@@ -136,21 +136,37 @@ public class Matrix<T> implements CloneablePublic<Matrix<T>>{
 		return matrix.iterator();
 	}
 
+	/**
+	 * 
+	 */
 	public String toString(){
 		String s = "";
-		Iterator<List<T>> matIt = matrix.iterator();
-		while(matIt.hasNext()){
-			Iterator<T> rowIt = matIt.next().iterator();
-			while(rowIt.hasNext()){
-				T elem = rowIt.next();
-				if(elem==null)
-					s+="*";
-				else
+
+		for(int y=dimY-1; y>=0; y--) {
+			for(int x=0;x<dimX;x++) {
+				T elem = this.get(x, y);
+				if(elem==null) {
+					s+=" ";
+				}
+				else {
 					s+=elem.toString();
+				}
 			}
-			if(matIt.hasNext())
-				s+="\n";
+			s+="\n";
 		}
+		//		Iterator<List<T>> matIt = matrix.iterator();
+		//		while(matIt.hasNext()){
+		//			Iterator<T> rowIt = matIt.next().iterator();
+		//			while(rowIt.hasNext()){
+		//				T elem = rowIt.next();
+		//				if(elem==null)
+		//					s+="-";
+		//				else
+		//					s+=elem.toString();
+		//			}
+		//			if(matIt.hasNext())
+		//				s+="\n";
+		//		}
 		return s;
 	}
 
@@ -245,19 +261,19 @@ public class Matrix<T> implements CloneablePublic<Matrix<T>>{
 	}
 
 	@SuppressWarnings("unused")
-  public void fill(T value){
+	public void fill(T value){
 		for(List<T> l:this.matrix)
 			for(T v:l)
 				v=value;
 	}
-	
+
 	/**
 	 * 
 	 * @return
 	 */
 	public Matrix<T> transpose() {
 		Matrix<T> tMatrix = new Matrix<T>(this.getDimY(), this.getDimX(), this.name);
-		
+
 		for(int x = 0; x<dimX; x++) {
 			for(int y = 0; y<dimY; y++) {
 				tMatrix.set(y, x, this.get(x,y));
@@ -265,7 +281,7 @@ public class Matrix<T> implements CloneablePublic<Matrix<T>>{
 		}			
 		return tMatrix;
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -273,7 +289,7 @@ public class Matrix<T> implements CloneablePublic<Matrix<T>>{
 	public Matrix<T> flipHorizontal() {
 		Matrix<T> fMatrix = new Matrix<T>(this.getDimX(), this.getDimY(), this.name);
 		int maxX = (int)(dimX/2);
-		
+
 		for(int y = 0; y<dimY; y++) {
 			for(int x = 0; x<maxX; x++) {
 				int fx = (dimX-1-x);
@@ -285,6 +301,6 @@ public class Matrix<T> implements CloneablePublic<Matrix<T>>{
 			}
 		}
 		return fMatrix;
-		
+
 	}
 }

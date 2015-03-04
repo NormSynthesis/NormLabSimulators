@@ -1,0 +1,10 @@
+#!/bin/bash
+
+path="$1"
+
+for i in `seq 1 12`; do
+	for j in `seq 10`; do
+		python plotData.py $1/Population$i-run$j.dat
+		python plotContentsData.py $1/Population$i-run$j-contentMetrics.dat
+	done
+done

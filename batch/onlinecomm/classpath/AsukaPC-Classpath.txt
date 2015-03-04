@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Initial settings
+ECLIPSE_HOME=/home/iosu/Repast-Simphony-2.1/eclipse
+JAVA_EXECUTABLE=java
+JAVA_FLAGS=-client
+ECLIPSE_PLUGINS=$ECLIPSE_HOME/plugins
+
+WORKSPACE=/home/iosu/workspace
+IRON_DIR=$WORKSPACE/NormSynthesisMachine
+NORMLAB_DIR=$WORKSPACE/NormLabSimulators
+PROJECT_DIR=$NORMLAB_DIR

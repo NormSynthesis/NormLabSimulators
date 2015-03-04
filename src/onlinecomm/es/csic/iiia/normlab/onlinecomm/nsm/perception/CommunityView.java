@@ -33,7 +33,7 @@ public class CommunityView implements View {
 	public CommunityView(List<IContent> actualUploads, List<IContent> actualViews, List<IContent> actualComplaints) {
 		this.actualUploadList = actualUploads;
 		this.actualViewList = actualViews;
-		this.actualComplaintList = actualComplaints;		
+		this.actualComplaintList = actualComplaints;
 	}
 
 	/**
@@ -45,9 +45,10 @@ public class CommunityView implements View {
 	public List<Long> getAgentIds() {
 		ArrayList<Long> agentIds = new ArrayList<Long>();
 		int uploadListSize = actualUploadList.size();
-		
+
 		for(int i = 0 ; i < uploadListSize ; i++){
-			agentIds.add((long) actualUploadList.get(i).getCreatorAgent());
+			IContent content = actualUploadList.get(i);
+			agentIds.add((long) content.getCreatorAgent());
 		}
 		return agentIds;
 	}

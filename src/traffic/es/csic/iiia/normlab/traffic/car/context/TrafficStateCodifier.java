@@ -21,34 +21,26 @@ public class TrafficStateCodifier
 	 * @param pos
 	 * @return
 	 */
-	public static String codify(TrafficElement element)
-	{
+	public static String codify(TrafficElement element)	{
 		String desc = "";
 		
-		if(element instanceof Wall)
-		{
+		if(element instanceof Wall)	{
 			desc = TrafficStateManager.WALL;
 		}
-		else if(element instanceof TrafficLight)
-		{
+		else if(element instanceof TrafficLight) {
 			desc = TrafficStateManager.TRAFFIC_LIGHT + codifyTrafficLight((TrafficLight)element);
 		}
-		else if(element instanceof Car)
-		{
+		else if(element instanceof Car) {
 			desc = TrafficStateManager.CAR + codifyCar((Car)element);
 		}
-		else if(element instanceof Collision)
-		{
-			if(((Collision) element).isViolation())
-			{
+		else if(element instanceof Collision)	{
+			if(((Collision) element).isViolation()) {
 				desc = TrafficStateManager.VIOL_COL + codifyCollision((Collision)element);	
 			}
-			else
-			{
+			else {
 				desc = TrafficStateManager.COLLISION + codifyCollision((Collision)element);
 			}
 		}
-		
 		desc = StringUtils.rightPad(desc, 63, '0');
 		
 		return desc;
@@ -58,12 +50,10 @@ public class TrafficStateCodifier
 	 * 
 	 * @return
 	 */
-	public static String decodify(String codDesc)
-	{
+	public static String decodify(String codDesc)	{
 		String desc;
 		
-		switch(TrafficStateManager.getType(codDesc))
-		{
+		switch(TrafficStateManager.getType(codDesc)) {
 			case Wall:
 				desc = "|";
 				break;
@@ -91,7 +81,6 @@ public class TrafficStateCodifier
   		default:
   			desc = "-";
 		}
-		
 		return desc;
 	}
 	
@@ -99,31 +88,30 @@ public class TrafficStateCodifier
 	 * 
 	 * @return
 	 */
-	public static String codify(String desc)
-	{
+	public static String codify(String desc) {
 		String codDesc = "";
 		
-		if(desc.equals("|"))
+		if(desc.equals("|")) {
 			codDesc = StringUtils.rightPad(TrafficStateManager.WALL, 63, '0');
-		
-		else if(desc.equals("^"))
+		}
+		else if(desc.equals("^")) {
 			codDesc = StringUtils.rightPad((TrafficStateManager.CAR + "0000000000"), 63, '0');
-		
-		else if(desc.equals(">"))
+		}
+		else if(desc.equals(">")) {
 			codDesc = StringUtils.rightPad((TrafficStateManager.CAR + "0000000001"), 63, '0');
-		
-		else if(desc.equals("v"))
+		}
+		else if(desc.equals("v")) {
 			codDesc = StringUtils.rightPad((TrafficStateManager.CAR + "0000000010"), 63, '0');
-		
-		else if(desc.equals("<"))
+		}
+		else if(desc.equals("<")) {
 			codDesc = StringUtils.rightPad((TrafficStateManager.CAR + "0000000011"), 63, '0');
-		
-		else if(desc.equals("*"))
+		}
+		else if(desc.equals("*")) {
 			codDesc = StringUtils.rightPad(TrafficStateManager.ANYTHING, 63, '0');
-		
-		else if(desc.equals("-"))
+		}
+		else if(desc.equals("-")) {
 			codDesc = StringUtils.rightPad("0", 63, '0');
-		
+		}
 		return codDesc;
 	}
 	
@@ -135,8 +123,7 @@ public class TrafficStateCodifier
 	 * 
 	 * @return
 	 */
-	private static String codifyTrafficLight(TrafficLight light)
-	{
+	private static String codifyTrafficLight(TrafficLight light) {
 		String state = "";
 
 		// Heading
@@ -151,8 +138,7 @@ public class TrafficStateCodifier
 	 * @param codDesc
 	 * @return
 	 */
-	private static String decodifyTrafficLight(String codDesc)
-	{
+	private static String decodifyTrafficLight(String codDesc) {
 		int steps = Integer.valueOf(codDesc.substring(3, 5), 2);
 		Direction dir = Direction.North.getTurnedDirectionIn90DegSteps(steps);
 		
@@ -162,8 +148,7 @@ public class TrafficStateCodifier
 	 * 
 	 * @return
 	 */
-	private static String codifyCar(Car car)
-	{
+	private static String codifyCar(Car car) {
 		String state = "";
 		
 		// ID
@@ -181,8 +166,7 @@ public class TrafficStateCodifier
 	 * @param id
 	 * @return
 	 */
-	private static String codifyCarId(long id)
-	{
+	private static String codifyCarId(long id) {
 		return StringUtils.leftPad(Long.toBinaryString(id), 8, '0');	
 	}
 	
@@ -190,8 +174,7 @@ public class TrafficStateCodifier
 	 * 
 	 * @param dir
 	 */
-	private static String codifyCarHeading(Direction dir)
-	{
+	private static String codifyCarHeading(Direction dir) {
 		int steps = dir.get90DegreeStepsFromNorth();
 		return StringUtils.leftPad(Long.toBinaryString(steps), 2, '0');
 	}
@@ -200,8 +183,7 @@ public class TrafficStateCodifier
 	 * 
 	 * @return
 	 */
-	private static String decodifyCar(String codDesc)
-	{
+	private static String decodifyCar(String codDesc) {
 		int steps = Integer.valueOf(codDesc.substring(11, 13), 2);
 		Direction dir = Direction.North.getTurnedDirectionIn90DegSteps(steps);
 		
@@ -212,8 +194,7 @@ public class TrafficStateCodifier
 	 * 
 	 * @return
 	 */
-	private static String codifyCollision(Collision col)
-	{
+	private static String codifyCollision(Collision col) {
 		int numElems = col.getElements().size();
 		String state = "";
 		
@@ -221,8 +202,7 @@ public class TrafficStateCodifier
 		state += StringUtils.leftPad(Long.toBinaryString(numElems), 3, '0');
 		
 		// Codify each car
-		for(TrafficElement elem : col.getElements())
-		{
+		for(TrafficElement elem : col.getElements()) {
 			Car car = (Car)elem;
 			state += codifyCar(car);
 		}			
@@ -234,8 +214,7 @@ public class TrafficStateCodifier
 	 * @param codDesc
 	 * @return
 	 */
-	private static String decodifyCollision(String codDesc)
-	{
+	private static String decodifyCollision(String codDesc) {
 		return "X";
 	}
 	
@@ -244,8 +223,7 @@ public class TrafficStateCodifier
 	 * @param codDesc
 	 * @return
 	 */
-	private static String decodifyViolCollision(String codDesc)
-	{
+	private static String decodifyViolCollision(String codDesc) {
 		return "O";
 	}
 }

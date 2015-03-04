@@ -10,6 +10,7 @@ import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.config.DomainFunctions;
 import es.csic.iiia.nsm.config.Goal;
 import es.csic.iiia.nsm.config.NormSynthesisSettings;
+import es.csic.iiia.nsm.metrics.NormSynthesisMetrics;
 import es.csic.iiia.nsm.net.norm.NormativeNetwork;
 import es.csic.iiia.nsm.norm.Norm;
 import es.csic.iiia.nsm.norm.NormativeSystem;
@@ -25,8 +26,6 @@ import es.csic.iiia.nsm.strategy.NormSynthesisStrategy;
  * @author "Javier Morales (jmorales@iiia.csic.es)"
  */
 public class TrafficNSExample4_NSStrategy implements NormSynthesisStrategy {
-
-
 
 	//---------------------------------------------------------------------------
 	// Attributes
@@ -59,7 +58,8 @@ public class TrafficNSExample4_NSStrategy implements NormSynthesisStrategy {
 	 * @param 	nsm the norm synthesis machine
 	 * @param 	genMode the SIMON generalisation mode
 	 */
-	public TrafficNSExample4_NSStrategy(NormSynthesisMachine nsm) {
+	public TrafficNSExample4_NSStrategy(NormSynthesisMachine nsm,
+			NormSynthesisMetrics nsMetrics) {
 
 		this.nsm = nsm;
 		this.nsmSettings = nsm.getNormSynthesisSettings();
@@ -69,17 +69,17 @@ public class TrafficNSExample4_NSStrategy implements NormSynthesisStrategy {
 		this.monitor = nsm.getMonitor();
 
 		this.normReasoner = new NormReasoner(this.nsmSettings.getSystemGoals(), 
-				this.predicatesDomains, this.dmFunctions);
+				this.predicatesDomains, this.dmFunctions, nsMetrics);
 
-		this.operators = new TrafficNSExample4_NSOperators(this, normReasoner, nsm);
 		this.conflicts = new HashMap<Goal, List<Conflict>>();
-
+		this.operators = new TrafficNSExample4_NSOperators(
+				this, normReasoner, nsm, nsMetrics);
+		
 		this.viewTransitions = new ArrayList<ViewTransition>();
 		this.createdNorms = new ArrayList<Norm>();
 		this.activatedNorms = new ArrayList<Norm>();
 		this.normAdditions = new ArrayList<Norm>();
 		this.normDeactivations = new ArrayList<Norm>();
-
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class TrafficNSExample4_NSStrategy implements NormSynthesisStrategy {
 			List<Conflict> goalConflicts = new ArrayList<Conflict>();
 
 			for(ViewTransition vTrans : viewTransitions) {
-				goalConflicts.addAll(dmFunctions.getNonRegulatedConflicts(goal, vTrans));
+				goalConflicts.addAll(dmFunctions.getConflicts(goal, vTrans));
 			}  	
 			conflicts.put(goal, goalConflicts);
 		}
@@ -203,11 +203,6 @@ public class TrafficNSExample4_NSStrategy implements NormSynthesisStrategy {
 		return this.normAdditions;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	public Map<Goal, List<Conflict>> getNonRegulatedConflictsThisTick() {
-		return this.conflicts;
-	}
+//	@Override
+//  public void addDefaultNormativeSystem(List<Norm> defaultNorms) {}
 }

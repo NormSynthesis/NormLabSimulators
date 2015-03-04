@@ -1,0 +1,14 @@
+<repast.simphony.data2.engine.FileSinkDescriptor>
+  <name>ExperimentOutputDataSink</name>
+  <dataSet>Dataset1</dataSet>
+  <delimiter>;</delimiter>
+  <format>TABULAR</format>
+  <sourceIds class="linked-hash-set">
+    <string>tick</string>
+    <string>NNCardinality</string>
+    <string>NSCardinality</string>
+    <string>AvgCompNonRegulatedNorms</string>
+  </sourceIds>
+  <fileName>output/onlinecomm/ExperimentOutputData</fileName>
+  <addTimeStamp>false</addTimeStamp>
+</repast.simphony.data2.engine.FileSinkDescriptor>

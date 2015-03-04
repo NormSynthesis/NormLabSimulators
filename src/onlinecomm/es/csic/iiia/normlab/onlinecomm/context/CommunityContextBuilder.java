@@ -41,16 +41,13 @@ import es.csic.iiia.normlab.onlinecomm.agents.profile.ComplaintProfile;
 import es.csic.iiia.normlab.onlinecomm.agents.profile.UploadProfile;
 import es.csic.iiia.normlab.onlinecomm.agents.profile.ViewProfile;
 import es.csic.iiia.normlab.onlinecomm.graphics.CreateGraphics;
-import es.csic.iiia.normlab.onlinecomm.metrics.CommunityMetricsManager;
 import es.csic.iiia.normlab.onlinecomm.nsm.CommunityNormSynthesisAgent;
+import es.csic.iiia.normlab.onlinecomm.nsm.CommunityNormSynthesisSettings;
 import es.csic.iiia.normlab.onlinecomm.nsm.perception.CommunityWatcher;
 import es.csic.iiia.normlab.onlinecomm.section.SectionForum;
 import es.csic.iiia.normlab.onlinecomm.section.SectionPhotoVideo;
 import es.csic.iiia.normlab.onlinecomm.section.SectionTheReporter;
-import es.csic.iiia.nsm.NormSynthesisMachine;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
-import es.csic.iiia.nsm.agent.language.TaxonomyOfNaturalNumbers;
-import es.csic.iiia.nsm.agent.language.TaxonomyOfTerms;
 
 /**
  * Context builder of the simulation
@@ -74,6 +71,7 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	// Schedule parameters
 	private double start = 1, interval = 1, priority = 0;
 	
+	private CommunityNormSynthesisAgent nsAgent;
 	private PredicatesDomains predDomains;
 
 	/**
@@ -88,8 +86,13 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	public Context<Object> build(Context<Object> context) {
 		CommunityContextBuilder.context = context;
 
-		random = new Random();
-		contextData = new ContextData(random);
+//		random = new Random(); Javi: Cambio esto para las semillas random...
+		
+		Parameters params = RunEnvironment.getInstance().getParameters();
+		int maxAgents = (Integer) params.getValue("maxAgents");	
+		long contentsQueueSize = (Long) params.getValue("ContentsQueueSize");
+		
+		contextData = new ContextData(maxAgents, contentsQueueSize); // TODO: Modificado para la cola de contents
 
 		context.setId("OnlineCommunityContext");
 
@@ -109,24 +112,22 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 						false, contextData.getNumColumns(), 
 						contextData.getNumRows())); 
 
-		//Save the context data in position 0,0
+		/* Save the context data in position 0,0 */
 		context.add(contextData);
 		space.moveTo(contextData, 0, 0);
 		grid.moveTo(contextData, 0, 0);
 
-		//Make the social web sections
+		/* Make the social web sections */
 		makeSections();
-
-		int idealNormativeSystemCardinality = 0;
-		ArrayList<CommunityAgent> agents;
-
+		
 		/* Create norm synthesis agent and metrics */
-		CommunityNormSynthesisAgent nsmAgent = createNSMAgent();
-		createMetricsManager(nsmAgent.getNormSynthesisMachine()); 
-
+		this.createNSMAgent();
+		this.predDomains = this.nsAgent.getPredicatesDomains();
+		
 		/* Create online community manager */
 		createManager();
-
+		int idealNormativeSystemCardinality = 0;
+		ArrayList<CommunityAgent> agents;
 
 		/* If the simulation is running in batch get the agents and parameters
 		 * from the XML file. If not open the configuration window */
@@ -135,31 +136,32 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 
 			/* Open the agent configuration window */
 			ConfigureAgentWindow caw = new ConfigureAgentWindow(new JFrame(), true);
-			createAgentsPopulation(caw.getAgents(),this.predDomains);
+			createAgentsPopulation(caw.getAgents(), this.predDomains);
 			agents = caw.getAgents();
 
 		}
 		else {
 			XMLParser leerFichero = new XMLParser();
-			ArrayList<CommunityAgent> agentes = leerFichero.getPopulationFromXML();
-			createAgentsPopulation(agentes,this.predDomains);
+			ArrayList<CommunityAgent> agentes = leerFichero.getPopulationFromXML();		
+			createAgentsPopulation(agentes, this.predDomains);
 			agents = agentes;
 
 		}
-
-		for(CommunityAgent a : agents)
-			if(a.getType() != 1)
-				idealNormativeSystemCardinality = a.getQuantity();
+		
+	
+		for(CommunityAgent a : agents) {
+			if(a.getType() != 1) {
+				idealNormativeSystemCardinality += a.getQuantity();
+			}
+		}
 
 		contextData.setIdealNormativeSystemCardinality(idealNormativeSystemCardinality);
 
-
-		//Read the stop tick from the parameters of the simulation 
-		Parameters params = RunEnvironment.getInstance().getParameters();
+		// Read the stop tick from the parameters of the simulation 
 		int stopTick= (Integer) params.getValue("StopTick");		
-		//Edit the simulation to stop at the tick read from the parameter.
+		
+		// Edit the simulation to stop at the tick read from the parameter.
 		RunEnvironment.getInstance().endAt(stopTick);
-
 
 		return context;
 	}
@@ -167,17 +169,29 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	/**
 	 * Method to create the iron agent and also create its scheduled methods to run every tick.
 	 */
-	private CommunityNormSynthesisAgent createNSMAgent()
-	{
+	private CommunityNormSynthesisAgent createNSMAgent() {
 		ScheduleParameters scheduleParams;
 		ISchedule schedule;
 
+		/* Create random seed */
+		int seed = (int)System.currentTimeMillis();
+		CommunityNormSynthesisSettings.init();
+
+		// Set the defined seed only if the simulation is not batch and the seed is != 0
+		if(CommunityNormSynthesisSettings.SIM_RANDOM_SEED != 0l) {
+			seed = CommunityNormSynthesisSettings.SIM_RANDOM_SEED;
+		}
+
 		schedule = RunEnvironment.getInstance().getCurrentSchedule();
-
 		CommunityWatcher watcher = new CommunityWatcher(contextData);
-		CommunityNormSynthesisAgent nsAgent =
-				new CommunityNormSynthesisAgent(watcher, contextData, predDomains);
-
+		
+		boolean isGui = !RunEnvironment.getInstance().isBatch();
+		this.nsAgent = new CommunityNormSynthesisAgent(watcher, contextData, seed, isGui);
+		
+		/* Get random and set it in the contextData */
+		random = this.nsAgent.getNormSynthesisMachine().getRandom();
+		contextData.setRandom(random);
+		
 		// Create scheduler for watcher
 		scheduleParams = ScheduleParameters.createRepeating(start, interval, -2);
 		schedule.schedule(scheduleParams, watcher, "perceive");
@@ -187,28 +201,31 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		schedule.schedule(scheduleParams, nsAgent, "step");
 
 		context.add(nsAgent);
+		context.add(nsAgent.getMetricsManager());
+
+		System.out.println("Starting simulation with random seed " + seed);
 
 		return nsAgent;
 	}
 
-	/**
-	 * Method to create the iron agent and also create its scheduled methods to run every tick.
-	 */
-	private void createMetricsManager(NormSynthesisMachine nsm)
-	{
-		ScheduleParameters scheduleParams;
-		ISchedule schedule;
-
-		schedule = RunEnvironment.getInstance().getCurrentSchedule();
-
-		CommunityMetricsManager metricsManager = new CommunityMetricsManager(contextData, nsm);
-
-		// Create scheduler for manager
-		scheduleParams = ScheduleParameters.createRepeating(start, interval, -2);
-		schedule.schedule(scheduleParams, metricsManager, "update");
-
-		context.add(metricsManager);
-	}
+//	/**
+//	 * Method to create the iron agent and also create its scheduled methods to run every tick.
+//	 */
+//	private void createMetricsManager(NormSynthesisMachine nsm)
+//	{
+////		ScheduleParameters scheduleParams;
+////		ISchedule schedule;
+//
+////		schedule = RunEnvironment.getInstance().getCurrentSchedule();
+//
+//		CommunityMetricsManager metricsManager = new CommunityMetricsManager(contextData, nsm);
+//
+//		// Create scheduler for manager
+////		scheduleParams = ScheduleParameters.createRepeating(start, interval, -2);
+////		schedule.schedule(scheduleParams, metricsManager, "update");
+//
+//		context.add(metricsManager);
+//	}
 
 
 	/**
@@ -268,12 +285,13 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	public void createAgentsPopulation(ArrayList<CommunityAgent> agents,
 			PredicatesDomains predDomains) {
 		row = 0;
+//		contextData.setNumAgents(agents.size());
 
 		for(int numeroAgente = 0 ; numeroAgente < agents.size() ; numeroAgente++){
 			for(int cantidadAgentes = 0 ; cantidadAgentes < agents.get(numeroAgente).getQuantity() ; cantidadAgentes++){				
 				row = contextData.getNewRow();
 				createAgent(agents.get(numeroAgente), predDomains);
-				contextData.setNumAgents(contextData.getNumAgents() + 1);
+				contextData.setNumAgents(contextData.getNumAgents()+1);
 			}
 		}
 	}
@@ -406,34 +424,5 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		});
 		//		RSApplication.getRSApplicationInstance().removeCustomUserPanel();
 		RSApplication.getRSApplicationInstance().addCustomUserPanel(panel);
-	}
-	
-	/**
-	 * Creates the predicate and their domains for the traffic scenario
-	 */
-	private void createPredicatesDomains() {
-
-		/* Predicate "usr" domain */
-		TaxonomyOfNaturalNumbers usrPredTaxonomy = new TaxonomyOfNaturalNumbers("usr");
-		TaxonomyOfNaturalNumbers secPredTaxonomy = new TaxonomyOfNaturalNumbers("sec");
-		
-		/* Predicate "front" domain*/
-		TaxonomyOfTerms cntTypePredTaxonomy = new TaxonomyOfTerms("cnt");
-		cntTypePredTaxonomy.addTerm("correct");
-		cntTypePredTaxonomy.addTerm("spam");
-		cntTypePredTaxonomy.addTerm("porn");
-		cntTypePredTaxonomy.addTerm("violent");
-		cntTypePredTaxonomy.addTerm("insult");
-		
-		cntTypePredTaxonomy.addRelationship("correct", "*");
-		cntTypePredTaxonomy.addRelationship("spam", "*");
-		cntTypePredTaxonomy.addRelationship("porn", "*");
-		cntTypePredTaxonomy.addRelationship("violent", "*");
-		cntTypePredTaxonomy.addRelationship("insult", "*");
-		
-		this.predDomains = new PredicatesDomains();
-		this.predDomains.addPredicateDomain("usr", usrPredTaxonomy);
-		this.predDomains.addPredicateDomain("sec", secPredTaxonomy);
-		this.predDomains.addPredicateDomain("cnt", cntTypePredTaxonomy);
 	}
 }

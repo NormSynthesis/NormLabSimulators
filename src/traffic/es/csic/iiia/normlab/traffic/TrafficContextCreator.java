@@ -35,7 +35,7 @@ public class TrafficContextCreator implements ContextBuilder<TrafficElement> {
 	//-------------------------------------------------------------------------
 	// Attributes
 	//-------------------------------------------------------------------------
-	
+
 	private final float ROAD_POSITION = 0f;
 	private final float WALL_POSITION = 1f;
 
@@ -46,7 +46,7 @@ public class TrafficContextCreator implements ContextBuilder<TrafficElement> {
 	//-------------------------------------------------------------------------
 	// Methods
 	//-------------------------------------------------------------------------
-	
+
 	/**
 	 * 
 	 */
@@ -74,8 +74,9 @@ public class TrafficContextCreator implements ContextBuilder<TrafficElement> {
 		int mapToUse = (Integer)p.getValue("SimMap");
 
 		try {
-			
+
 			String usrDir = System.getProperty("user.dir");
+			//			System.out.println(usrDir);
 			// Open map file
 			FileInputStream file = new FileInputStream("maps/" + mapToUse + ".map");
 			DataInputStream input = new DataInputStream(file);

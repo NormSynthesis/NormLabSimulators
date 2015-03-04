@@ -1,0 +1,55 @@
+<repast.simphony.data2.engine.DataSetDescriptor>
+  <name>TrafficDataSet</name>
+  <type>NON_AGGREGATE</type>
+  <sourceType>es.csic.iiia.normlab.traffic.metrics.TrafficMetrics</sourceType>
+  <inclTick>true</inclTick>
+  <inclBatchRun>false</inclBatchRun>
+  <inclRandomSeed>false</inclRandomSeed>
+  <scheduleParams>
+    <start>1.0</start>
+    <interval>1.0</interval>
+    <priority>-Infinity</priority>
+    <pType>LAST</pType>
+    <duration>-1.0</duration>
+    <frequency>REPEAT</frequency>
+    <hashCode>-164850721</hashCode>
+  </scheduleParams>
+  <atEnd>false</atEnd>
+  <methodDataSources class="linked-hash-map">
+    <entry>
+      <string>NormativeNetworkCardinality</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>NormativeNetworkCardinality</id>
+        <className>es.csic.iiia.normlab.traffic.metrics.TrafficMetrics</className>
+        <methodName>getNormativeNetworkCardinality</methodName>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>NormativeSystemMinimality</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>NormativeSystemMinimality</id>
+        <className>es.csic.iiia.normlab.traffic.metrics.TrafficMetrics</className>
+        <methodName>getNormativeSystemMinimality</methodName>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>NormativeSystemFitoussiMinimality</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>NormativeSystemFitoussiMinimality</id>
+        <className>es.csic.iiia.normlab.traffic.metrics.TrafficMetrics</className>
+        <methodName>getNormativeSystemFitoussiMinimality</methodName>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+    <entry>
+      <string>AvgNoViolCollisions</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>AvgNoViolCollisions</id>
+        <className>es.csic.iiia.normlab.traffic.metrics.TrafficMetrics</className>
+        <methodName>getAvgNoViolCollisions</methodName>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+  </methodDataSources>
+  <countSources class="linked-hash-map"/>
+  <customNADataSources class="linked-hash-map"/>
+  <customAggDataSources class="linked-hash-map"/>
+</repast.simphony.data2.engine.DataSetDescriptor>

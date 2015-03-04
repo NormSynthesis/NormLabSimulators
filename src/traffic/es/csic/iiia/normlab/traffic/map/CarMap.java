@@ -16,6 +16,8 @@ import es.csic.iiia.normlab.traffic.agent.Collision;
 import es.csic.iiia.normlab.traffic.agent.TrafficElement;
 import es.csic.iiia.normlab.traffic.car.CarPosition;
 import es.csic.iiia.normlab.traffic.car.context.TrafficStateCodifier;
+import es.csic.iiia.normlab.traffic.factory.CarContextFactory;
+import es.csic.iiia.normlab.traffic.factory.TrafficFactFactory;
 import es.csic.iiia.normlab.traffic.normsynthesis.TrafficNormSynthesisSettings;
 import es.csic.iiia.normlab.traffic.utils.Direction;
 import es.csic.iiia.normlab.traffic.utils.Turn;
@@ -36,6 +38,9 @@ public class CarMap extends TrafficMatrix {
 	//---------------------------------------------------------------------------
 	
 	private PredicatesDomains predDomains;
+	private CarContextFactory carContextFactory;
+	private TrafficFactFactory factFactory;
+	
 	private List<Car> allCars, travelingCars, carsToRemove;
 	private LinkedList<Car> availableCars;
 	private List<Collision> collisions, collisionsToRemove;
@@ -69,11 +74,15 @@ public class CarMap extends TrafficMatrix {
 	 * @param normLayer
 	 */
 	public CarMap(Context<TrafficElement> context, Grid<TrafficElement> map,
-			PredicatesDomains predDomains) 
-	{
+			PredicatesDomains predDomains, CarContextFactory carContextFactory,
+			TrafficFactFactory factFactory) {
+		
 		super(map.getDimensions().getHeight(), map.getDimensions().getWidth());
 		
 		this.predDomains = predDomains;
+		this.carContextFactory = carContextFactory;
+		this.factFactory = factFactory;
+		
 		this.xDim = map.getDimensions().getWidth();
 		this.yDim = map.getDimensions().getHeight();
 		this.context = context;
@@ -112,7 +121,7 @@ public class CarMap extends TrafficMatrix {
 
 		for(short i=1; i<100; i++)
 		{
-			car = new Car(i, true, predDomains);
+			car = new Car(i, true, predDomains, carContextFactory, factFactory);
 			allCars.add(car);
 			availableCars.add(car);
 		}
@@ -248,7 +257,7 @@ public class CarMap extends TrafficMatrix {
 					break;  
 				else {
 					add(cp);
-					System.out.println("    > Car emited");
+//					System.out.println("    > Car emited");
 				}
 			}		
 		}

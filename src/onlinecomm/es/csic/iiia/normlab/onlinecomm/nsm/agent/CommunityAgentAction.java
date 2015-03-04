@@ -1,6 +1,6 @@
 package es.csic.iiia.normlab.onlinecomm.nsm.agent;
 
-import es.csic.iiia.nsm.agent.AgentAction;
+import es.csic.iiia.nsm.agent.EnvironmentAgentAction;
 
 /**
  * 
@@ -9,9 +9,10 @@ import es.csic.iiia.nsm.agent.AgentAction;
  * @author Iosu Mendizabal
  *
  */
-public enum CommunityAgentAction implements AgentAction {
-
+public enum CommunityAgentAction implements EnvironmentAgentAction {
 	Upload,
-	
+	View, 
+	Complain, 
+	DoNotUpload,
 	Nothing
 }

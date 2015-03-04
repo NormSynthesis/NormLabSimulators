@@ -16,16 +16,18 @@ import repast.simphony.space.grid.GridPoint;
  */
 public class CarContextFactory {
 
-	/**
-	 * 
-	 */
-	private static int innerLoopXOp, innerLoopYOp, outerLoopXOp, outerLoopYOp;
+	private int innerLoopXOp, innerLoopYOp, outerLoopXOp, outerLoopYOp;
+	private int x1, x2, y1, y2, szX, szY;
+	
+	private TrafficFactFactory factFactory;
 	
 	/**
 	 * 
 	 */
-	private static int x1, x2, y1, y2, szX, szY;
-
+	public CarContextFactory(TrafficFactFactory factFactory) {
+		this.factFactory = factFactory;
+	}
+	
 	/**
 	 * Generates the scope of a car
 	 * 
@@ -33,7 +35,7 @@ public class CarContextFactory {
 	 * @param car
 	 * @return
 	 */
-	public static CarContext getCarContextIn(TrafficMatrix matrix,
+	public CarContext getCarContextIn(TrafficMatrix matrix,
 			long carId, Type type) {
 		
 		GridPoint pos = matrix.getCarPosition(carId);
@@ -130,7 +132,7 @@ public class CarContextFactory {
 				}
 			}
 		}
-		context.pack();
+		context.pack(this.factFactory);
 		return context;
 	}
 
@@ -139,7 +141,7 @@ public class CarContextFactory {
 	 * @param car
 	 * @param pos
 	 */
-	private static void generateCoordinates(Direction dir, GridPoint pos) 
+	private void generateCoordinates(Direction dir, GridPoint pos) 
 	{
 		int numRows = CarContext.NUM_ROWS;
 		int numCols = CarContext.NUM_COLS; 

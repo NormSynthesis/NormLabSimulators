@@ -1,26 +1,22 @@
 package es.csic.iiia.normlab.traffic.examples.ex1;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import es.csic.iiia.nsm.NormSynthesisMachine;
-import es.csic.iiia.nsm.config.Goal;
 import es.csic.iiia.nsm.net.norm.NormativeNetwork;
 import es.csic.iiia.nsm.norm.NormativeSystem;
-import es.csic.iiia.nsm.norm.generation.Conflict;
 import es.csic.iiia.nsm.strategy.NormSynthesisStrategy;
 
 /**
+ * A basic norm synthesis strategy, which always outputs an
+ * empty normative system
  * 
  * @author "Javier Morales (jmorales@iiia.csic.es)"
  *
  */
 public class TrafficNSExample1_NSStrategy implements NormSynthesisStrategy{
 
-	private Map<Goal, List<Conflict>> conflicts;
+	/* The normative system to output */
 	private NormativeNetwork normativeNetwork;
-	
+
 	/**
 	 * Constructor of the first norm synthesis example strategy  
 	 * 
@@ -28,25 +24,19 @@ public class TrafficNSExample1_NSStrategy implements NormSynthesisStrategy{
 	 */
 	public TrafficNSExample1_NSStrategy(NormSynthesisMachine nsm) {
 		this.normativeNetwork = nsm.getNormativeNetwork();
-		this.conflicts = new HashMap<Goal, List<Conflict>>();
 	}
-	
+
 	/**
-	 * A basic norm synthesis strategy that always outputs an
+	 * A basic norm synthesis strategy, which always outputs an
 	 * empty normative system
 	 * 
 	 * @return an empty normative system
 	 */
 	@Override
-  public NormativeSystem execute() {
+	public NormativeSystem execute() {
 		return this.normativeNetwork.getNormativeSystem();
-  }
-	
-	/**
-	 * 
-	 */
-	@Override
-  public Map<Goal, List<Conflict>> getNonRegulatedConflictsThisTick() {
-		return this.conflicts;
-  }
+	}
+
+//	@Override
+//	public void addDefaultNormativeSystem(List<Norm> defaultNorms) {}
 }

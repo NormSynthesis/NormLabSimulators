@@ -3,9 +3,9 @@ package es.csic.iiia.normlab.traffic.car.context;
 import java.util.ArrayList;
 import java.util.List;
 
-import es.csic.iiia.normlab.traffic.TrafficSimulator;
+import es.csic.iiia.normlab.traffic.factory.TrafficFactFactory;
 import es.csic.iiia.normlab.traffic.map.TrafficMatrix;
-import es.csic.iiia.nsm.agent.AgentContext;
+import es.csic.iiia.nsm.agent.EnvironmentAgentContext;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
 
 /**
@@ -14,7 +14,7 @@ import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
  * @author Javier Morales (jmoralesmat@gmail.com)
  *
  */
-public class CarContext extends TrafficMatrix implements AgentContext {
+public class CarContext extends TrafficMatrix implements EnvironmentAgentContext {
 
 	/**
 	 * 
@@ -61,10 +61,10 @@ public class CarContext extends TrafficMatrix implements AgentContext {
 	/**
 	 * 
 	 */
-	public void pack() {
+	public void pack(TrafficFactFactory factFactory) {
 		
 		/* Generate description in the form of predicates and terms */
-		this.description = TrafficSimulator.getFactFactory().generatePredicates(this);
+		this.description = factFactory.generatePredicates(this);
 		
 		/* Get perceived agents identifiers */
 		this.perceivedAgentsIds = new ArrayList<Long>();
@@ -86,7 +86,7 @@ public class CarContext extends TrafficMatrix implements AgentContext {
 	/**
 	 * 
 	 */
-	public boolean equals(AgentContext otherContext) {
+	public boolean equals(EnvironmentAgentContext otherContext) {
 		CarContext context = (CarContext) otherContext;
 		return this.getDistance(context) == 0;
 	}

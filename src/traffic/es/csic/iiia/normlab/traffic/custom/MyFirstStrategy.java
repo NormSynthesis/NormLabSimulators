@@ -1,47 +1,33 @@
 package es.csic.iiia.normlab.traffic.custom;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import es.csic.iiia.nsm.config.Goal;
 import es.csic.iiia.nsm.net.norm.NormativeNetwork;
 import es.csic.iiia.nsm.norm.NormativeSystem;
-import es.csic.iiia.nsm.norm.generation.Conflict;
 
 /**
  * 
  */
 public class MyFirstStrategy implements es.csic.iiia.nsm.strategy.NormSynthesisStrategy {
 
-	private Map<Goal, List<Conflict>> conflicts; // to save conflicts
+	/* The normative network, a data structure to keep track of norms */
 	private NormativeNetwork normativeNetwork;
 	
 	/**
+	 * Constructor of the strategy
 	 * 
 	 * @param nsm
 	 */
 	public MyFirstStrategy(es.csic.iiia.nsm.NormSynthesisMachine nsm) {
-		this.conflicts = new HashMap<Goal, List<Conflict>>();
 		
-		/* Get norm synthesis elements */
+		/* Get normative network */
 		this.normativeNetwork = nsm.getNormativeNetwork();
 	}
 	
 	/**
-	 * 
+	 * Executes your strategy
 	 */
 	@Override
   public NormativeSystem execute() {
 		return normativeNetwork.getNormativeSystem();
-  }
-
-	/**
-	 * 
-	 */
-	@Override
-  public Map<Goal, List<Conflict>> getNonRegulatedConflictsThisTick() {
-	  return conflicts;
   }
 }
 

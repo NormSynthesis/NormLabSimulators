@@ -1,6 +1,7 @@
 package es.csic.iiia.normlab.traffic.car;
 
 import java.awt.Color;
+import java.util.Random;
 
 import es.csic.iiia.normlab.traffic.TrafficSimulator;
 
@@ -33,7 +34,8 @@ public class CarColor {
 	 * Constructor
 	 */
 	public CarColor() {
-		int n = TrafficSimulator.getRandom().nextInt(6);
+		Random rnd = new Random();
+		int n = rnd.nextInt(6);
 		float s = 0.5f, b = 0.75f;
 		
 		switch(n) {

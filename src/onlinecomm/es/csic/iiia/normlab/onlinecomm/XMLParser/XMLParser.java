@@ -69,12 +69,12 @@ public class XMLParser {
 			DocumentBuilder build = dFact.newDocumentBuilder();
 			Document doc = build.newDocument();
 
-			Element	root = doc.createElement("Agents");
+			Element	root = doc.createElement("agents");
 			doc.appendChild(root);
 
 			for(int i = 0 ; i < agente.size() ; i++ ) { 
 				if(agente.get(i).getQuantity() > 0){
-					Element Details = doc.createElement("Agent");
+					Element Details = doc.createElement("agent");
 					root.appendChild(Details);
 
 					Element quantity = doc.createElement("quantity");
@@ -201,7 +201,7 @@ public class XMLParser {
 
 			doc.getDocumentElement().normalize();
 
-			NodeList nList = doc.getElementsByTagName("Agente");
+			NodeList nList = doc.getElementsByTagName("agent");
 
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 
@@ -212,17 +212,17 @@ public class XMLParser {
 					Element eElement = (Element) nNode;
 
 					Double correct = Double.parseDouble(eElement.getElementsByTagName(
-							"Correct").item(0).getTextContent());
+							"correct").item(0).getTextContent());
 					Double spam = Double.parseDouble(eElement.getElementsByTagName(
-							"Spam").item(0).getTextContent());
+							"spam").item(0).getTextContent());
 					Double porn = Double.parseDouble(eElement.getElementsByTagName(
-							"Porn").item(0).getTextContent());
+							"porn").item(0).getTextContent());
 					Double violent = Double.parseDouble(eElement.getElementsByTagName(
-							"Violent").item(0).getTextContent());
+							"violent").item(0).getTextContent());
 					Double insult = Double.parseDouble(eElement.getElementsByTagName(
-							"Insult").item(0).getTextContent());
+							"insult").item(0).getTextContent());
 					Double uploadProb = Double.parseDouble(eElement.getElementsByTagName(
-							"UploadProbability").item(0).getTextContent());
+							"uploadProbability").item(0).getTextContent());
 
 					//Upload profile settings
 					UploadProfile uploadProfile = new UploadProfile(uploadProb, 
@@ -230,42 +230,42 @@ public class XMLParser {
 
 					//View profile settings
 					ViewProfile viewProfile = new ViewProfile(
-							Double.parseDouble(eElement.getElementsByTagName("SecForum").item(0).getTextContent()),
-							Double.parseDouble(eElement.getElementsByTagName("SecTheReporter").item(0).getTextContent()),
-							Double.parseDouble(eElement.getElementsByTagName("SecPhotoVideo").item(0).getTextContent()), 
-							Integer.parseInt(eElement.getElementsByTagName("ViewMode").item(0).getTextContent()));
+							Double.parseDouble(eElement.getElementsByTagName("secForum").item(0).getTextContent()),
+							Double.parseDouble(eElement.getElementsByTagName("secTheReporter").item(0).getTextContent()),
+							Double.parseDouble(eElement.getElementsByTagName("secPhotoVideo").item(0).getTextContent()), 
+							Integer.parseInt(eElement.getElementsByTagName("viewMode").item(0).getTextContent()));
 					
 					//Complaint Profile
 					ComplaintProfile complaintProfile = new ComplaintProfile(
-							Double.parseDouble(eElement.getElementsByTagName("ComplaintSpam").item(0).getTextContent()),
-							Double.parseDouble(eElement.getElementsByTagName("ComplaintPorn").item(0).getTextContent()),
-							Double.parseDouble(eElement.getElementsByTagName("ComplaintViolent").item(0).getTextContent()),
-							Double.parseDouble(eElement.getElementsByTagName("ComplaintInsult").item(0).getTextContent()));
+							Double.parseDouble(eElement.getElementsByTagName("complaintSpam").item(0).getTextContent()),
+							Double.parseDouble(eElement.getElementsByTagName("complaintPorn").item(0).getTextContent()),
+							Double.parseDouble(eElement.getElementsByTagName("complaintViolent").item(0).getTextContent()),
+							Double.parseDouble(eElement.getElementsByTagName("complaintInsult").item(0).getTextContent()));
 
 					int numAgent = 0;
-					if(eElement.getElementsByTagName("Name").item(0).getTextContent().equals("Moderate")){
+					if(eElement.getElementsByTagName("name").item(0).getTextContent().equals("moderate")){
 						numAgent = 1;
 					}
-					if(eElement.getElementsByTagName("Name").item(0).getTextContent().equals("Spammer")){
+					if(eElement.getElementsByTagName("name").item(0).getTextContent().equals("spammer")){
 						numAgent = 2;
 					}
-					if(eElement.getElementsByTagName("Name").item(0).getTextContent().equals("Pornographic")){
+					if(eElement.getElementsByTagName("name").item(0).getTextContent().equals("pornographic")){
 						numAgent = 3;
 					}
-					if(eElement.getElementsByTagName("Name").item(0).getTextContent().equals("Violent")){
+					if(eElement.getElementsByTagName("name").item(0).getTextContent().equals("violent")){
 						numAgent = 4;
 					}
-					if(eElement.getElementsByTagName("Name").item(0).getTextContent().equals("Rude")){
+					if(eElement.getElementsByTagName("name").item(0).getTextContent().equals("rude")){
 						numAgent = 5;
 					}
-					if(eElement.getElementsByTagName("Name").item(0).getTextContent().equals("another")){
+					if(eElement.getElementsByTagName("name").item(0).getTextContent().equals("another")){
 						numAgent = 6;
 					}
 					CommunityAgent moderate = new CommunityAgent(
-							numAgent, Integer.parseInt(eElement.getElementsByTagName("Quantity").item(0).getTextContent()),
-							eElement.getElementsByTagName("Name").item(0).getTextContent(),
+							numAgent, Integer.parseInt(eElement.getElementsByTagName("quantity").item(0).getTextContent()),
+							eElement.getElementsByTagName("name").item(0).getTextContent(),
 							uploadProfile,viewProfile,complaintProfile,
-							eElement.getElementsByTagName("PopulationName").item(0).getTextContent());
+							eElement.getElementsByTagName("populationName").item(0).getTextContent());
 
 					agenteDeXML.add(moderate);
 				}

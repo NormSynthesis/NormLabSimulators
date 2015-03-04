@@ -1,46 +1,41 @@
 <repast.simphony.data2.engine.DataSetDescriptor>
-  <name>Online Community Data Set</name>
+  <name>Dataset1</name>
   <type>NON_AGGREGATE</type>
   <sourceType>es.csic.iiia.normlab.onlinecomm.metrics.CommunityMetricsManager</sourceType>
   <inclTick>true</inclTick>
-  <inclBatchRun>true</inclBatchRun>
+  <inclBatchRun>false</inclBatchRun>
   <inclRandomSeed>false</inclRandomSeed>
   <scheduleParams>
     <start>1.0</start>
     <interval>1.0</interval>
     <priority>-Infinity</priority>
+    <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
+    <hashCode>-1971589361</hashCode>
   </scheduleParams>
+  <atEnd>true</atEnd>
   <methodDataSources class="linked-hash-map">
     <entry>
-      <string>ComplaintsForRegulatedNorms</string>
+      <string>NNCardinality</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>ComplaintsForRegulatedNorms</id>
-        <className>es.csic.iiia.normlab.onlinecomm.metrics.CommunityMetricsManager</className>
-        <methodName>getComplaintsForRegulatedNorms</methodName>
-      </repast.simphony.data2.engine.MethodDataSourceDefinition>
-    </entry>
-    <entry>
-      <string>NormativeNetworkCardinality</string>
-      <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>NormativeNetworkCardinality</id>
+        <id>NNCardinality</id>
         <className>es.csic.iiia.normlab.onlinecomm.metrics.CommunityMetricsManager</className>
         <methodName>getNormativeNetworkCardinality</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>NormativeSystemCardinality</string>
+      <string>NSCardinality</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>NormativeSystemCardinality</id>
+        <id>NSCardinality</id>
         <className>es.csic.iiia.normlab.onlinecomm.metrics.CommunityMetricsManager</className>
         <methodName>getNormativeSystemCardinality</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>
     </entry>
     <entry>
-      <string>AvgComplaintsForNonRegulatedNorms</string>
+      <string>AvgCompNonRegulatedNorms</string>
       <repast.simphony.data2.engine.MethodDataSourceDefinition>
-        <id>AvgComplaintsForNonRegulatedNorms</id>
+        <id>AvgCompNonRegulatedNorms</id>
         <className>es.csic.iiia.normlab.onlinecomm.metrics.CommunityMetricsManager</className>
         <methodName>getAvgComplaintsForNonRegulatedNorms</methodName>
       </repast.simphony.data2.engine.MethodDataSourceDefinition>

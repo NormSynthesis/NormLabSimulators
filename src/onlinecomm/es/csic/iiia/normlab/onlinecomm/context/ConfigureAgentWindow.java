@@ -816,19 +816,19 @@ public class ConfigureAgentWindow extends JDialog implements ActionListener {
 					}
 				}
 
-				if (agents.get(i).getName().equals("Moderate")) {
+				if (agents.get(i).getName().equals("moderate")) {
 					this.ModerateAgentNumber.setText("" + agents.get(i).getQuantity());
 				}
-				if (agents.get(i).getName().equals("Pornographic")) {
+				if (agents.get(i).getName().equals("pornographic")) {
 					this.PornoAgentNumber.setText("" + agents.get(i).getQuantity());
 				}
-				if (agents.get(i).getName().equals("Rude")) {
+				if (agents.get(i).getName().equals("rude")) {
 					this.RudeAgentNumber.setText("" + agents.get(i).getQuantity());
 				}
-				if (agents.get(i).getName().equals("Spammer")) {
+				if (agents.get(i).getName().equals("spammer")) {
 					this.SpammerAgentNumber.setText("" + agents.get(i).getQuantity());
 				}
-				if (agents.get(i).getName().equals("Violent")) {
+				if (agents.get(i).getName().equals("violent")) {
 					this.ViolentAgentNumber.setText("" + agents.get(i).getQuantity());
 				}
 			}
