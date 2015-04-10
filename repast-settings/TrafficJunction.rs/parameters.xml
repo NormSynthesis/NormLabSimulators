@@ -35,11 +35,11 @@
 	
 	<parameter 	name="NormSynthesisExample" isReadOnly="false" displayName="NSM: Norm synthesis example" type="int"
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-				defaultValue="1" />
+				defaultValue="0" />
 				
-	<parameter 	name="NormSynthesisStrategy" isReadOnly="false" displayName="NSM: Norm synthesis strategy (0=CUSTOM/1=IRON/2=SIMON/3=SIMON+/4=LION)" type="int"
+	<parameter 	name="NormSynthesisStrategy" isReadOnly="false" displayName="NSM: Norm synthesis strategy (CUSTOM/IRON/SIMON/XSIMON)" type="int"
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-				defaultValue="2" />
+				defaultValue="3" />
 
 	<parameter 	name="NormGeneralisationMode" isReadOnly="false" displayName="NSM: Norm generalisation mode (SHALLOW/DEEP)" type="int"
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
@@ -48,11 +48,7 @@
 	<parameter 	name="NormGeneralisationStep" isReadOnly="false" displayName="NSM: Norm generalisation step" type="int"
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 				defaultValue="1" />
-
-	<parameter 	name="NormGenerationReactive" isReadOnly="false" displayName="NSM: Reactive norm generation" type="boolean" 
-				converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-				defaultValue="true" />
-					
+	
 	<parameter 	name="NormsGenEffThreshold" isReadOnly="false" displayName="NSM: Norm gen. eff. threshold" type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 				defaultValue="-0.1" />
@@ -63,35 +59,31 @@
 	
 	<parameter 	name="NormsSpecEffThreshold" isReadOnly="false" displayName="NSM: Norm spec. eff. threshold" type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-				defaultValue="0.05" />
+				defaultValue="0.026" />
 	
 	<parameter 	name="NormsSpecNecThreshold" isReadOnly="false" displayName="NSM: Norm spec. nec. threshold" type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-				defaultValue="0.05" />
+				defaultValue="0.026" />
 	
 	<parameter 	name="NormsSpecThresholdEpsilon" isReadOnly="false" displayName="NSM: Spec. threshold epsilon" type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 				defaultValue="0.025" />
-	
-	<parameter 	name="NormsDefaultUtility" isReadOnly="false" displayName="NSM: Norms default utility" type="double" 
-				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-				defaultValue="0.5" />
-
-	<parameter 	name="NormsMinEvaluationsToClassify" isReadOnly="false" displayName="NSM: Norms min. evaluations classify" type="int" 
+				
+	<parameter 	name="NormsMinEvaluations" isReadOnly="false" displayName="NSM: Norms min. evaluations" type="int" 
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-				defaultValue="50" />
-	
-	<parameter 	name="NormGroupsMinEvaluationsToClassify" isReadOnly="false" displayName="NSM: Norm groups min. evaluations classify" type="int" 
-				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-				defaultValue="25" />
+				defaultValue="20" />
 				
 	<parameter 	name="NormsPerfRangeSize" isReadOnly="false" displayName="NSM: Norms performance range size" type="int" 
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-				defaultValue="50" />
+				defaultValue="100" />
+				
+	<parameter 	name="NormsDefaultUtility" isReadOnly="false" displayName="NSM: Norms default utility" type="double" 
+				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+				defaultValue="0.5" />
 				
 	<parameter 	name="NumTicksToConverge" isReadOnly="false" displayName="NSM: Num. ticks to converge" type="long" 
 				converter="repast.simphony.parameter.StringConverterFactory$LongConverter"
-				defaultValue="4000" />
+				defaultValue="5000" />
 				
 	<parameter 	name="NumExec" isReadOnly="false" displayName="NSM: Num. execution" type="int" 
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"

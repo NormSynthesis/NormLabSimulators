@@ -19,7 +19,7 @@ public interface TrafficNormSynthesisAgent {
 	 * @throws IncorrectSetupException 
 	 * 
 	 */
-	public void step(long timeStep) throws IncorrectSetupException;
+	public void step() throws IncorrectSetupException;
 
 	/**
 	 * 

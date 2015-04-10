@@ -10,7 +10,6 @@ import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.config.DomainFunctions;
 import es.csic.iiia.nsm.config.Goal;
 import es.csic.iiia.nsm.config.NormSynthesisSettings;
-import es.csic.iiia.nsm.metrics.NormSynthesisMetrics;
 import es.csic.iiia.nsm.net.norm.NormativeNetwork;
 import es.csic.iiia.nsm.norm.Norm;
 import es.csic.iiia.nsm.norm.NormativeSystem;
@@ -58,8 +57,7 @@ public class TrafficNSExample4_NSStrategy implements NormSynthesisStrategy {
 	 * @param 	nsm the norm synthesis machine
 	 * @param 	genMode the SIMON generalisation mode
 	 */
-	public TrafficNSExample4_NSStrategy(NormSynthesisMachine nsm,
-			NormSynthesisMetrics nsMetrics) {
+	public TrafficNSExample4_NSStrategy(NormSynthesisMachine nsm) {
 
 		this.nsm = nsm;
 		this.nsmSettings = nsm.getNormSynthesisSettings();
@@ -69,17 +67,17 @@ public class TrafficNSExample4_NSStrategy implements NormSynthesisStrategy {
 		this.monitor = nsm.getMonitor();
 
 		this.normReasoner = new NormReasoner(this.nsmSettings.getSystemGoals(), 
-				this.predicatesDomains, this.dmFunctions, nsMetrics);
+				this.predicatesDomains, this.dmFunctions);
 
+		this.operators = new TrafficNSExample4_NSOperators(this, normReasoner, nsm);
 		this.conflicts = new HashMap<Goal, List<Conflict>>();
-		this.operators = new TrafficNSExample4_NSOperators(
-				this, normReasoner, nsm, nsMetrics);
-		
+
 		this.viewTransitions = new ArrayList<ViewTransition>();
 		this.createdNorms = new ArrayList<Norm>();
 		this.activatedNorms = new ArrayList<Norm>();
 		this.normAdditions = new ArrayList<Norm>();
 		this.normDeactivations = new ArrayList<Norm>();
+
 	}
 
 	/**
@@ -203,6 +201,17 @@ public class TrafficNSExample4_NSStrategy implements NormSynthesisStrategy {
 		return this.normAdditions;
 	}
 
-//	@Override
-//  public void addDefaultNormativeSystem(List<Norm> defaultNorms) {}
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean hasNonRegulatedConflictsThisTick() {
+		return false;
+	}
+
+	@Override
+  public void newNonRegulatedConflictsSolvedThisTick() {
+	  // TODO Auto-generated method stub
+	  
+  }
 }

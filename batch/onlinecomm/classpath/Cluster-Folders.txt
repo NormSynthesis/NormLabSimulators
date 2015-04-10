@@ -2,19 +2,18 @@
 
 #Cluster settings
 
-#PBS -N SimonVC-IOSU
-#PBS -l pmem=4000mb
-#PBS -l walltime=72:00:00
-#PBS -l nodes=2:ppn=2
+#PBS -N testIosu
+#PBS -l pmem=3000mb
+#PBS -l walltime=00:10:00
+#PBS -l nodes=1:ppn=1
 #PBS -V
-#PBS -q iiia
+#PBS -q default
 
 # Initial settings
-ECLIPSE_HOME=/home/iosu/Repast-Simphony-2.1/eclipse
+WORKSPACE=/gpfs/home2/iosu/workspace
+IRON_DIR=/gpfs/home2/iosu/workspace/NormSynthesisMachine
+ECLIPSE_HOME=/gpfs/home2/iosu/Repast-Symphony-2.0/eclipse
 JAVA_EXECUTABLE=java
 JAVA_FLAGS=-client
 ECLIPSE_PLUGINS=$ECLIPSE_HOME/plugins
-
-WORKSPACE=/home/iosu/workspace
-IRON_DIR=/home/iosu/workspace/NormSynthesisMachine
-NORMLAB_DIR=$WORKSPACE/NormLabSimulators
+NORMLAB_DIR=$WORKSPACE/NormLab

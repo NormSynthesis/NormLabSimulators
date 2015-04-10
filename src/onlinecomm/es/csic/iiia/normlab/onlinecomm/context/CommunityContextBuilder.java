@@ -48,6 +48,7 @@ import es.csic.iiia.normlab.onlinecomm.section.SectionForum;
 import es.csic.iiia.normlab.onlinecomm.section.SectionPhotoVideo;
 import es.csic.iiia.normlab.onlinecomm.section.SectionTheReporter;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
+import es.csic.iiia.nsm.agent.language.TaxonomyOfTerms;
 
 /**
  * Context builder of the simulation
@@ -86,13 +87,8 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	public Context<Object> build(Context<Object> context) {
 		CommunityContextBuilder.context = context;
 
-//		random = new Random(); Javi: Cambio esto para las semillas random...
-		
-		Parameters params = RunEnvironment.getInstance().getParameters();
-		int maxAgents = (Integer) params.getValue("maxAgents");	
-		long contentsQueueSize = (Long) params.getValue("ContentsQueueSize");
-		
-		contextData = new ContextData(maxAgents, contentsQueueSize); // TODO: Modificado para la cola de contents
+		random = new Random();
+		contextData = new ContextData(random);
 
 		context.setId("OnlineCommunityContext");
 
@@ -158,10 +154,12 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		contextData.setIdealNormativeSystemCardinality(idealNormativeSystemCardinality);
 
 		// Read the stop tick from the parameters of the simulation 
+		Parameters params = RunEnvironment.getInstance().getParameters();
 		int stopTick= (Integer) params.getValue("StopTick");		
 		
 		// Edit the simulation to stop at the tick read from the parameter.
 		RunEnvironment.getInstance().endAt(stopTick);
+
 
 		return context;
 	}
@@ -173,25 +171,11 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		ScheduleParameters scheduleParams;
 		ISchedule schedule;
 
-		/* Create random seed */
-		int seed = (int)System.currentTimeMillis();
-		CommunityNormSynthesisSettings.init();
-
-		// Set the defined seed only if the simulation is not batch and the seed is != 0
-		if(CommunityNormSynthesisSettings.SIM_RANDOM_SEED != 0l) {
-			seed = CommunityNormSynthesisSettings.SIM_RANDOM_SEED;
-		}
-
 		schedule = RunEnvironment.getInstance().getCurrentSchedule();
+
 		CommunityWatcher watcher = new CommunityWatcher(contextData);
-		
-		boolean isGui = !RunEnvironment.getInstance().isBatch();
-		this.nsAgent = new CommunityNormSynthesisAgent(watcher, contextData, seed, isGui);
-		
-		/* Get random and set it in the contextData */
-		random = this.nsAgent.getNormSynthesisMachine().getRandom();
-		contextData.setRandom(random);
-		
+		this.nsAgent = new CommunityNormSynthesisAgent(watcher, contextData);
+
 		// Create scheduler for watcher
 		scheduleParams = ScheduleParameters.createRepeating(start, interval, -2);
 		schedule.schedule(scheduleParams, watcher, "perceive");
@@ -202,8 +186,6 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 
 		context.add(nsAgent);
 		context.add(nsAgent.getMetricsManager());
-
-		System.out.println("Starting simulation with random seed " + seed);
 
 		return nsAgent;
 	}

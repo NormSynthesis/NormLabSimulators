@@ -19,9 +19,6 @@ import es.csic.iiia.nsm.config.NormSynthesisSettings;
  */
 public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 
-	/* Random seed */
-	public static int SIM_RANDOM_SEED;
-
 	//-----------------------------------------------------------------
 	// Goals and norm evaluation settings
 	//-----------------------------------------------------------------
@@ -31,7 +28,7 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 
 	/* Learning rate of the method */
 	private static float LEARNING_RATE = 0.2f;
-
+	
 	/* Path to output files */
 	public static String SIM_DATA_PATH = "output/onlinecomm/";
 
@@ -40,28 +37,19 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 
 	/* File to output the final norms upon convergence */
 	public static String SIM_FINAL_NORMS_FILE = "FinalNorms";
-
+	
 	/* Name of the file that tracks the normative systems synthesised upon coonvergence */
 	public static String SIM_FINAL_NORMSETS_FILE = "NormativeSystems";
 
 	/* Norm violation rate of the agents */
 	public static float SIM_NORM_VIOLATION_RATE;
-
-	/* Size of the contents queue */
-	public static long CONTENTS_QUEUE_SIZE;
 	
 	//-----------------------------------------------------------------
 	// Norm Synthesis settings
 	//-----------------------------------------------------------------
 
-	/* Number of agents in the simulation */ 
-	public static int SIM_NUM_AGENTS;
-
 	/* Norm synthesis strategy */
 	public static int NORM_SYNTHESIS_STRATEGY;
-
-	/* Is norm generation highly reactive to conflicts? */
-	public static boolean NORM_GENERATION_REACTIVE;
 
 	/* Norm generalisation mode */
 	public static int NORM_GENERALISATION_MODE;
@@ -89,74 +77,48 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 
 	/* Epsilon to build the deactivation/activation band for norms */
 	public static double NORM_SPEC_THRESHOLD_EPSILON;
-
+	
 	/* Number of ticks of stability to converge */
 	private static long NUM_TICKS_TO_CONVERGE;
-
-	/* */
-	public static int NORMS_MIN_EVALS_CLASSIFY;
+	
+	/* Number of minimum evaluations to compute stuff on norms */
+	public static int NORM_MIN_EVALS;
 
 	/* Norms include predicate usr(id) or not? */
 	public static boolean NORMS_WITH_USER_ID;
-
+	
 	//---------------------------------------------------------------------------
 	// Methods
 	//---------------------------------------------------------------------------
-
-	/**
-	 * 
-	 */
-	public CommunityNormSynthesisSettings() {
-		init();
-	}
 	
 	/**
 	 * Constructor of the social configuration.
 	 */
-	public static void init(){		
+	public CommunityNormSynthesisSettings(){		
 		Parameters p = RunEnvironment.getInstance().getParameters();
-
-		SIM_RANDOM_SEED = (Integer)p.getValue("randomSeed");
-		SIM_NUM_AGENTS =  (Integer)p.getValue("maxAgents");
+		
 		SIM_NORM_VIOLATION_RATE = (Float) p.getValue("Norm Violation Rate");
 		NUM_TICKS_TO_CONVERGE = (Long)p.getValue("NumTicksToConverge");
-		CONTENTS_QUEUE_SIZE = (Long)p.getValue("ContentsQueueSize");
 		
 		NORM_GEN_EFF_THRESHOLD = (Double)p.getValue("NormsGenEffThreshold");
 		NORM_GEN_NEC_THRESHOLD = (Double)p.getValue("NormsGenNecThreshold");
 		NORM_SPEC_EFF_THRESHOLD = (Double)p.getValue("NormsSpecEffThreshold");
 		NORM_SPEC_NEC_THRESHOLD = (Double)p.getValue("NormsSpecNecThreshold");
+
 		NORM_UTILITY_WINDOW_SIZE = (Integer)p.getValue("NormsPerfRangeSize");
 		NORM_DEFAULT_UTILITY = (Double)p.getValue("NormsDefaultUtility");
-
+		
 		NORM_SYNTHESIS_STRATEGY = (Integer)p.getValue("NormSynthesisStrategy");
-		NORM_GENERATION_REACTIVE = (Boolean)p.getValue("NormGenerationReactive");
 		NORM_GENERALISATION_MODE = (Integer)p.getValue("NormGeneralisationMode");
 		NORM_GENERALISATION_STEP = (Integer)p.getValue("NormGeneralisationStep");
 		NORM_SPEC_THRESHOLD_EPSILON = (Double)p.getValue("NormsSpecThresholdEpsilon");
-		NORMS_MIN_EVALS_CLASSIFY = (Integer)p.getValue("NormsMinEvaluationsToClassify");
+		NORM_MIN_EVALS = (Integer)p.getValue("NormsMinEvaluations");
 		NORMS_WITH_USER_ID = (Boolean)p.getValue("NormsWithUserId");
-
-		
 		
 		// System goals and their constants
 		systemGoals = new ArrayList<Goal>();
 		systemGoals.add(new GComplaints());
 
-		//		double tMinusEpsilon = NORM_SPEC_NEC_THRESHOLD - NORM_SPEC_THRESHOLD_EPSILON;
-		//		
-		//		/* For SIMON+ and LION, set default utility in a different manner... */
-		//		if(NORM_SYNTHESIS_STRATEGY == 3 || NORM_SYNTHESIS_STRATEGY == 4) {
-		//			NORM_DEFAULT_UTILITY = (float)(tMinusEpsilon * (NORM_MIN_EVALS+1)); 
-		//		}
-
-		/* For SIMON+ and LION, set default utility in a different manner... */
-		if((NORM_SYNTHESIS_STRATEGY == 3 || NORM_SYNTHESIS_STRATEGY == 4) &&
-				!NORM_GENERATION_REACTIVE) 
-		{
-			NORM_DEFAULT_UTILITY = 0f; 
-			System.out.println("Norm generation is set as Deliberative");
-		}
 	}
 
 	/**
@@ -166,14 +128,6 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 	 */
 	public List<Goal> getSystemGoals() {
 		return systemGoals;
-	}
-
-	/**
-	 * 
-	 */
-	@Override
-	public boolean isNormGenerationReactiveToConflicts() {
-		return NORM_GENERATION_REACTIVE;
 	}
 
 	/**
@@ -202,7 +156,7 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 	public boolean showAllNormsScoreChart() {
 		return false;
 	}
-
+	
 	/**
 	 * 
 	 */
@@ -253,7 +207,7 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 	 * 
 	 */
 	@Override
-	public NormGeneralisationMode getNormGeneralisationMode() {		
+  public NormGeneralisationMode getNormGeneralisationMode() {		
 		switch(NORM_GENERALISATION_MODE) {
 		case 0:
 			return NormGeneralisationMode.Shallow;
@@ -266,16 +220,16 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 	 * 
 	 */
 	@Override
-	public int getNormGeneralisationStep() {
-		return NORM_GENERALISATION_STEP;
-	}
+  public int getNormGeneralisationStep() {
+	  return NORM_GENERALISATION_STEP;
+  }
 
 	/**
 	 * 
 	 */
 	@Override
 	public String getNormSynthesisStrategy() {
-
+		
 		switch(NORM_SYNTHESIS_STRATEGY) {
 		case 1:
 			return "IRON";
@@ -284,8 +238,8 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 			return "SIMON";
 
 		case 3: 
-			return "DON-SIMON";
-
+			return "SIMON+";
+			
 		case 4:
 			return "LION";
 
@@ -314,21 +268,5 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 	 */
 	public float getSpecialisationBoundaryEpsilon(Dimension dim, Goal goal) {
 		return (float)NORM_SPEC_THRESHOLD_EPSILON;
-	}
-
-	/**
-	 * 
-	 */
-	@Override
-	public int getMinEvaluationsToClassifyNorms() {
-		return NORMS_MIN_EVALS_CLASSIFY;
-	}
-
-	/**
-	 * 
-	 */
-	@Override
-	public int getMinEvaluationsToClassifyNormGroups() {
-		return 20;
 	}
 }

@@ -11,19 +11,19 @@
 				
 	<parameter 	name="randomSeed" displayName="Default Random Seed"
 				type="int" 
-				defaultValue="0"
+				defaultValue="__NULL__"
 				isReadOnly="false" 
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 				
 	<parameter 	name="Total Comments" displayName="Total Comments"
 				type="int" 
-				defaultValue="5000" 
+				defaultValue="1000" 
 				isReadOnly="false" 
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 	
 	<parameter 	name="maxAgents" displayName="Number max agents"
 				type="int" 
-				defaultValue="100" 
+				defaultValue="10" 
 				isReadOnly="false" 
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 
@@ -33,35 +33,13 @@
 				isReadOnly="false" 
 				converter="repast.simphony.parameter.StringConverterFactory$FloatConverter" />
 	
-	<parameter 	name="ContentsQueueSize" displayName="Contents queue size"
-				type="long" 
-				defaultValue="3000" 
-				isReadOnly="false" 
-				converter="repast.simphony.parameter.StringConverterFactory$LongConverter" />
-	
-	<parameter 	name="conflictThreshold" displayName="Conlfict Threshold"
-				type="double" 
-				defaultValue="0.5" 
-				isReadOnly="false" 
-				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter" />
-			
-	<parameter 	name="ContentsNumViewsToClassify" displayName="ContentsNumViewsToClassify"
-				type="long" 
-				defaultValue="10" 
-				isReadOnly="false" 
-				converter="repast.simphony.parameter.StringConverterFactory$LongConverter" />
-					
 	<!-- NORM SYNTHESIS SETTINGS -->
 
-	<parameter 	name="NormSynthesisStrategy" isReadOnly="false" displayName="NSM: Norm synthesis strategy (0=CUSTOM/1=IRON/2=SIMON/3=DON-SIMON/4=LION)" 
+	<parameter 	name="NormSynthesisStrategy" isReadOnly="false" displayName="NSM: Norm synthesis strategy (0=CUSTOM/1=IRON/2=SIMON/3=SIMON+/4=LION)" 
 				type="int"
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 				defaultValue="3" />
 
-	<parameter 	name="NormGenerationReactive" isReadOnly="false" displayName="NSM: Reactive norm generation" type="boolean" 
-				converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-				defaultValue="false" />
-				
 	<parameter 	name="NormGeneralisationMode" isReadOnly="false" displayName="NSM: Norm generalisation mode (SHALLOW/DEEP)"
 				type="int"
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
@@ -75,35 +53,32 @@
 	<parameter 	name="NormsGenEffThreshold" isReadOnly="false" displayName="NSM: Norm gen. eff. threshold"
 				type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-				defaultValue="0.1" />
+				defaultValue="-0.1" />
 	
 	<parameter 	name="NormsGenNecThreshold" isReadOnly="false" displayName="NSM: Norm gen. nec. threshold"
 				type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-				defaultValue="0.1" />
+				defaultValue="-0.1" />
 	
 	<parameter 	name="NormsSpecEffThreshold" isReadOnly="false" displayName="NSM: Norm spec. eff. threshold"
 				type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-				defaultValue="0.1" />
+				defaultValue="0.05" />
 	
 	<parameter 	name="NormsSpecNecThreshold" isReadOnly="false" displayName="NSM: Norm spec. nec. threshold"
 				type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-				defaultValue="0.5" />
+				defaultValue="0.1" />
 	
 	<parameter 	name="NormsSpecThresholdEpsilon" isReadOnly="false" displayName="NSM: Spec. threshold epsilon"
 				type="double" 
 				converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-				defaultValue="0.05" />
+				defaultValue="0.025" />
 				
-	<parameter 	name="NormsMinEvaluationsToClassify" isReadOnly="false" displayName="NSM: Norms min. evaluations classify" type="int" 
+	<parameter 	name="NormsMinEvaluations" isReadOnly="false" displayName="NSM: Norms min. evaluations"
+				type="int" 
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-				defaultValue="50" />
-	
-	<parameter 	name="NormGroupsMinEvaluationsToClassify" isReadOnly="false" displayName="NSM: Norm groups min. evaluations classify" type="int" 
-				converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-				defaultValue="25" />
+				defaultValue="20" />
 				
 	<parameter 	name="NormsPerfRangeSize" isReadOnly="false" displayName="NSM: Norms performance range size"
 				type="int" 

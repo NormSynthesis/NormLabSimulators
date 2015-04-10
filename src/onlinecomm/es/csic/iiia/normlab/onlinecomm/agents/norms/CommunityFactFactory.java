@@ -2,7 +2,7 @@ package es.csic.iiia.normlab.onlinecomm.agents.norms;
 
 import es.csic.iiia.normlab.onlinecomm.nsm.CommunityNormSynthesisSettings;
 import es.csic.iiia.normlab.onlinecomm.nsm.agent.CommunityAgentContext;
-import es.csic.iiia.nsm.agent.EnvironmentAgentContext;
+import es.csic.iiia.nsm.agent.AgentContext;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
 import es.csic.iiia.nsm.norm.reasoning.JessFactsGenerator;
@@ -48,7 +48,7 @@ public class CommunityFactFactory extends JessFactsGenerator {
 	 * @param scope
 	 * @return
 	 */
-	public SetOfPredicatesWithTerms generatePredicates(EnvironmentAgentContext aContext) {
+	public SetOfPredicatesWithTerms generatePredicates(AgentContext aContext) {
 		SetOfPredicatesWithTerms predicatesWithTerms = new SetOfPredicatesWithTerms();
 		CommunityAgentContext context = (CommunityAgentContext) aContext;
 

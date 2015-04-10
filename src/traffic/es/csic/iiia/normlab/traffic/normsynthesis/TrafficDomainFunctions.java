@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import repast.simphony.space.grid.GridPoint;
+import es.csic.iiia.normlab.traffic.TrafficSimulator;
 import es.csic.iiia.normlab.traffic.agent.monitor.TrafficView;
 import es.csic.iiia.normlab.traffic.car.CarAction;
 import es.csic.iiia.normlab.traffic.car.context.CarContext;
@@ -23,8 +24,8 @@ import es.csic.iiia.normlab.traffic.car.context.TrafficStateManager.StateType;
 import es.csic.iiia.normlab.traffic.config.Gcols;
 import es.csic.iiia.normlab.traffic.factory.CarContextFactory;
 import es.csic.iiia.normlab.traffic.norms.tree.TrafficPredicateInconsistencies;
-import es.csic.iiia.nsm.agent.EnvironmentAgentAction;
-import es.csic.iiia.nsm.agent.EnvironmentAgentContext;
+import es.csic.iiia.nsm.agent.AgentAction;
+import es.csic.iiia.nsm.agent.AgentContext;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
 import es.csic.iiia.nsm.agent.language.TaxonomyOfTerms;
@@ -114,7 +115,7 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	 * @return a description of the car's local context 
 	 */
 	@Override
-	public EnvironmentAgentContext agentContextFunction(long carId, View view) {
+	public AgentContext agentContextFunction(long carId, View view) {
 		TrafficView tView = (TrafficView)view;
 		CarContext context = carContextFactory.getCarContextIn(tView,
 				carId, CarContext.Type.Front);
@@ -132,10 +133,10 @@ public class TrafficDomainFunctions implements DomainFunctions {
 	 * @return the actions that the car performed
 	 */
 	@Override
-	public List<EnvironmentAgentAction> agentActionFunction(long carId, 
+	public List<AgentAction> agentActionFunction(long carId, 
 			ViewTransition viewStream) {
 
-		List<EnvironmentAgentAction> actions = new ArrayList<EnvironmentAgentAction>();
+		List<AgentAction> actions = new ArrayList<AgentAction>();
 
 		/* Get the position of the car in the previous and the current view */
 		TrafficView pView = (TrafficView)viewStream.getView(-1);
@@ -204,24 +205,6 @@ public class TrafficDomainFunctions implements DomainFunctions {
 		return conflicts;
 	}
 
-	/**
-	 * 
-	 */
-	@Override
-	public List<Conflict> getConflicts(Goal goal, ViewTransition viewTransition,
-			long agentId) {
-
-		List<Conflict> allConflicts = this.getConflicts(goal, viewTransition);
-		List<Conflict> agentConflicts = new ArrayList<Conflict>();
-
-		for(Conflict conflict : allConflicts) {
-			if(conflict.getConflictingAgents().contains(agentId)) {
-				agentConflicts.add(conflict);
-			}
-		}
-		return agentConflicts;
-	}
-	
 	/**
 	 * Returns true if the given car has collided in a view with any other car
 	 * 

@@ -6,7 +6,7 @@ import java.util.List;
 import es.csic.iiia.normlab.onlinecomm.agents.CommunityAgent;
 import es.csic.iiia.normlab.onlinecomm.content.IContent;
 import es.csic.iiia.normlab.onlinecomm.nsm.CommunityNormSynthesisAgent;
-import es.csic.iiia.nsm.agent.EnvironmentAgentContext;
+import es.csic.iiia.nsm.agent.AgentContext;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
 
 /**
@@ -16,7 +16,7 @@ import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
  * @author Iosu Mendizabal
  *
  */
-public class CommunityAgentContext implements EnvironmentAgentContext {
+public class CommunityAgentContext implements AgentContext {
 
 	private long agentId;
 	private int section;
@@ -47,8 +47,10 @@ public class CommunityAgentContext implements EnvironmentAgentContext {
 		this.section = section;
 		this.contentType = contentType;
 		this.contentTypeDesc = contentTypeDesc;
-
+		
 		this.perceivedAgentsIds = new ArrayList<Long>();
+		this.description = CommunityNormSynthesisAgent.
+				getFactFactory().generatePredicates(this);
 	}
 	
 	/**
@@ -86,7 +88,7 @@ public class CommunityAgentContext implements EnvironmentAgentContext {
 	 * 
 	 * @return true if it is equal, false if it isn't.
 	 */
-	public boolean equals(EnvironmentAgentContext otherContext){
+	public boolean equals(AgentContext otherContext){
 		CommunityAgentContext context = (CommunityAgentContext)otherContext;
 	
 		return context.getId() == this.agentId && 
@@ -102,14 +104,6 @@ public class CommunityAgentContext implements EnvironmentAgentContext {
 		return this.description;
 	}
 
-	/**
-	 * 
-	 * @param desc
-	 */
-	public void setDescription(SetOfPredicatesWithTerms desc) {
-		this.description = desc;
-	}
-	
 	/**
 	 * 
 	 */

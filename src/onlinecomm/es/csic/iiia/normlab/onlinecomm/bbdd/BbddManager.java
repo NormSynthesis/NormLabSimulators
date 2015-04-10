@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
 
-import repast.simphony.engine.environment.RunEnvironment;
 import es.csic.iiia.normlab.onlinecomm.agents.CommunityAgent;
 import es.csic.iiia.normlab.onlinecomm.agents.profile.ComplaintProfile;
 import es.csic.iiia.normlab.onlinecomm.agents.profile.UploadProfile;
@@ -45,7 +44,7 @@ public class BbddManager {
 	protected final int idSpam = 2;
 	protected final int idPorn = 3;
 	protected final int idViolent = 4;
-	protected final int idInsult = 6;
+	protected final int idInsult = 5;
 
 	/**
 	 * Method to established connection to BBDD
@@ -54,7 +53,7 @@ public class BbddManager {
 	 */
 	public void connect(){
 		String userName = "root";
-		String password = "";
+		String password = "070501a";
 		String direction = "jdbc:mysql://localhost/onlineCommunity";
 
 		try {
@@ -148,30 +147,28 @@ public class BbddManager {
 				String url = result.getString("url");
 				String message = result.getString("message");
 
-				double tick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
-				
 				switch(format){
 				case txt:
 					switch(idType){
 					case idOk:
 						comment = new CorrectComment(id, category, type, url, 
-								message, section, categoryDesc, tick);
+								message, section, categoryDesc);
 						break;
 					case idSpam:
 						comment = new SpamComment(id, category, type, url, 
-								message, section, categoryDesc, tick);
+								message, section, categoryDesc);
 						break;
 					case idPorn:
 						comment = new PornComment(id, category, type, url, 
-								message, section, categoryDesc, tick);
+								message, section, categoryDesc);
 						break;
 					case idViolent:
 						comment = new ViolentComment(id, category, type, url, 
-								message,section, categoryDesc, tick);
+								message,section, categoryDesc);
 						break;		
 					case idInsult:
 						comment = new InsultComment(id, category, type, url,
-								message, section, categoryDesc, tick);
+								message, section, categoryDesc);
 						break;	
 					}
 					break;

@@ -4,9 +4,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -15,65 +24,46 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import es.csic.iiia.normlab.onlinecomm.batch.NewExperimentButton;
 
 
 public class ExperimentLauncherCreator extends JFrame implements ActionListener {
-	/**
-	 * 
-	 */
-  private static final long serialVersionUID = -2082897485136628404L;
-
-	ArrayList<Integer> NormSynthesisStrategy;
-
-	String name;
-	String configFolder = "batch/onlinecomm/configurations";
-	
-	double NormGeneralisationMode = 1;
-	double NormGeneralisationStep = 1;
-	double NormsGenEffThreshold = 0.3;
-	double NormsGenNecThreshold = 0.3;
-	double NormsSpecEffThreshold = 0.05;
-	double NormsSpecNecThreshold = 0.1;
-	double NormsSpecThresholdEpsilon = 0.025;
-	double NormsMinEvaluations = 20;
-	double NormsPerfRangeSize = 100;
-	double NormsDefaultUtility = 0.5;
-	double NumTicksToConverge = 1000;
-	boolean NormsWithUserId = true;
-	boolean NormGenerationReactive = false;
-	double ContentsQueueSize = 1000;
-	String batchDir = "$PROJECT_DIR'/batch/onlinecomm/batch_params.xml'";
-	
-	double experimentRepetition = 1;
-
-	private JList<String> ExperimentChooseList;
+	private JList ExperimentChooseList;
 	private JButton FlechaDerecha;
 	private JLabel label1;
 	private JButton Launch;
 	private JButton NewExperiment;
 	private JButton FlechaIzquierda;
 	private JLabel label2;
-	private JList<String> ExperimentLaunchList;
-	DefaultListModel<String> ExperimentChooseListModel;
-	DefaultListModel<String> ExperimentLaunchListModel;
+	private JList ExperimentLaunchList;
+	DefaultListModel ExperimentChooseListModel;
+	DefaultListModel ExperimentLaunchListModel;
+
+	String nombre;
+	String carpeta = "batch/onlinecomm/configurations";
 
 	int totalComments = 0;
 	int numberAgents = 0;
 	private JLabel ExperimentNameLabel;
 	private JTextField ExperimentName;
-	private JCheckBox AllCheckBox, PCcheckBox, ClusterCheckBox;
+	private JCheckBox AllCheckBox;
 	double normViolationRate = 0;
 	int stopTick = 0;
 
@@ -81,20 +71,14 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 	 * @param args
 	 */
 	public static void main(String[] args) {
+
 		ExperimentLauncherCreator l = new ExperimentLauncherCreator();
 		l.launch();
 		l.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE );
 	}
 
-	/**
-	 * 
-	 */
 	private void launch() {
 		initGUI();
-		NormSynthesisStrategy = new ArrayList<Integer>();
-		NormSynthesisStrategy.add(1); //IRON
-		NormSynthesisStrategy.add(2); //SIMON
-		NormSynthesisStrategy.add(3); //SIMON+
 
 		readExperimentNames();
 
@@ -102,25 +86,19 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 		setLocationRelativeTo(null);
 		setVisible(true);	
 	}
-	
-/**
- * 
- */
+
 	private void readExperimentNames() {		
-		File directorio = new File (configFolder);
+		File directorio = new File (carpeta);
 		File[] archivos = directorio.listFiles();
 
 		ExperimentChooseListModel.removeAllElements();
 		for(File file:archivos){
-			name = file.getName();
-			if(name.contains(".xml"))
-				ExperimentChooseListModel.addElement(name);
+			nombre = file.getName();
+			if(nombre.contains(".xml"))
+				ExperimentChooseListModel.addElement(nombre);
 		}
 	}
 
-	/**
-	 * 
-	 */
 	private void initGUI() {
 		try {
 			// Set Look & Feel
@@ -128,15 +106,15 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 
 			getContentPane().setLayout(null);
 
-			ExperimentChooseListModel = new DefaultListModel<String>();
-			ExperimentChooseList = new JList<String>();
+			ExperimentChooseListModel = new DefaultListModel();
+			ExperimentChooseList = new JList();
 			getContentPane().add(ExperimentChooseList);
 			ExperimentChooseList.setModel(ExperimentChooseListModel);
 			ExperimentChooseList.setBounds(98, 115, 224, 315);
 
 
-			ExperimentLaunchListModel = new DefaultListModel<String>();
-			ExperimentLaunchList = new JList<String>();
+			ExperimentLaunchListModel = new DefaultListModel();
+			ExperimentLaunchList = new JList();
 			getContentPane().add(ExperimentLaunchList);
 			ExperimentLaunchList.setModel(ExperimentLaunchListModel);
 			ExperimentLaunchList.setBounds(431, 115, 232, 317);
@@ -175,18 +153,6 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 			AllCheckBox.setBounds(342, 182, 49, 23);
 			getContentPane().add(AllCheckBox);
 
-			PCcheckBox = new JCheckBox();
-			PCcheckBox.setText("PC");
-			PCcheckBox.setBounds(342, 300, 49, 23);
-			getContentPane().add(PCcheckBox);
-			PCcheckBox.addActionListener(this);
-
-			ClusterCheckBox = new JCheckBox();
-			ClusterCheckBox.setText("Cluster");
-			ClusterCheckBox.setBounds(342, 320, 100, 23);
-			getContentPane().add(ClusterCheckBox);
-			ClusterCheckBox.addActionListener(this);
-
 			ExperimentNameLabel = new JLabel();
 			ExperimentNameLabel.setText("Experiment Name:");
 			ExperimentNameLabel.setBounds(261, 481, 115, 16);
@@ -205,21 +171,17 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 	}
 
-	/**
-	 * 
-	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == FlechaDerecha){
-			if(AllCheckBox.isSelected())
-			{
+			if(AllCheckBox.isSelected()){
 				for(int i = 0 ; i < ExperimentChooseListModel.size() ; i++){
 					ExperimentLaunchListModel.addElement(ExperimentChooseListModel.get(i));
 				}
 				ExperimentChooseListModel.removeAllElements();
-			}
-			else{
+			}else{
 				int index = ExperimentChooseList.getSelectedIndex();
 				ExperimentLaunchListModel.addElement(ExperimentChooseListModel.get(index));
 				ExperimentChooseListModel.remove(index);
@@ -234,8 +196,7 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 					ExperimentChooseListModel.addElement(ExperimentLaunchListModel.get(i));
 				}
 				ExperimentLaunchListModel.removeAllElements();
-			}
-			else{
+			}else{
 				int index = ExperimentLaunchList.getSelectedIndex();
 				ExperimentChooseListModel.addElement(ExperimentLaunchListModel.get(index));
 				ExperimentLaunchListModel.remove(index);
@@ -243,13 +204,6 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 			}
 		}
 
-		if(e.getSource() == PCcheckBox){
-			ClusterCheckBox.setSelected(false);
-		}
-
-		if(e.getSource() == ClusterCheckBox){
-			PCcheckBox.setSelected(false);
-		}
 		if(e.getSource() == NewExperiment){
 			new NewExperimentButton(new javax.swing.JFrame(), true);	
 			readExperimentNames();
@@ -257,194 +211,605 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 		}
 
 		if(e.getSource() == Launch){
-			if (PCcheckBox.isSelected() || ClusterCheckBox.isSelected()){
-				//1 = ASUKA
-				//2 = ATTO CLUSTER
-				int machine;
-				if(PCcheckBox.isSelected()){
-					machine = 1;
-				}else{
-					machine = 2;
-				}
-				createExperimentLaunchers(machine);
-				JOptionPane.showMessageDialog(null, "Done");
-				//				this.dispose();
-				System.exit(0);
-
-				//launchExperiments();
-			}			
-			JOptionPane.showMessageDialog(null, "Select machine (PC or Cluster).");
+			clusterNewClasspath();
+			//createClusterBatchLauncher();//cluster viejo
+			//crearBashFuncionaUnaEjecucion(); //NormLab probado asuka
+			
+			
+//			crearBashParaCluster();
+			//launchExperiments();
 		}
 	}
 
-	/**
-	 * 
-	 * @param machine
-	 */
-	private void createExperimentLaunchers(int machine) {
-		String experimentOutputFile = "ExperimentOutputData";
-		String experimentsFolderName = ExperimentName.getText();
-		String launcherFileName = "";
-		String projectDir = "";
-		String strategyName = "";
+	private void clusterNewClasspath() {
+			ArrayList<String> folders = leerFichero("batch/onlinecomm/classpath/Cluster-Folders.txt");
+//			ArrayList<String> classpath = leerFichero("batch/onlinecomm/classpath/Cluster-Classpath.txt");
 
-		ArrayList<String> foldersLine = new ArrayList<String>();
-		FileWriter launcherFileWriter = null;
-		PrintWriter launcherPrintWriter = null;
+			String nombreCarpeta = ExperimentName.getText();
+			String experimentOutputFile = "ExperimentOutputData";
 
-		int numPopulations = ExperimentLaunchListModel.getSize();
-		int strategyNum = 0;
+			FileWriter fichero = null;
+			PrintWriter pw = null;
 
-		/* Generate a different set of launchers for each
-		 *  different norm synthesis approach */
-		for(int strategy = 0; strategy < NormSynthesisStrategy.size(); strategy++){
-			/* Get norm synthesis strategy (its name) */
-			switch(NormSynthesisStrategy.get(strategy)) {
-			case 1:	strategyName = "IRON";	
-							strategyNum = 0;
-							break;
-			case 2:	strategyName = "SIMON";
-							strategyNum = 12;
-							break;
-			case 3:	strategyName = "SIMONPlus";				
-							strategyNum = 24;
-							break;
-			case 4:	strategyName = "LION";			break;
-			}
+			//		String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xmx400M repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/batch_params.xml $PROJECT_DIR/virtualCommunities.rs\n";
+			String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xms400M -Xmx1g repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/onlinecomm/batch_params.xml $PROJECT_DIR/repast-settings/OnlineCommunity.rs\n";
 
-			/* Generate a different launcher for each different population */
-			for (int numPopulation = 0; numPopulation < numPopulations; numPopulation++) {
-				
-				/* Get population URL */
-				String populationURL = getPopulationURL(numPopulation);
-				
-				/* Get launcher file name */
-				switch (machine){
-				case 1:
-					foldersLine = readFile("batch/onlinecomm/classpath/AsukaPC-Classpath.txt");
-					launcherFileName = "batch/onlinecomm/launchers/pc/" + strategyName + "_Experiments_Launcher_";
-					projectDir = "PROJECT_DIR=$NORMLAB_DIR\n";
-					break;
-				case 2:
-					foldersLine = readFile("batch/onlinecomm/classpath/Cluster-Folders.txt");
-					launcherFileName = "batch/onlinecomm/launchers/cluster/" + strategyName + "_Experiments_Launcher_";
-					projectDir = "PROJECT_DIR=$WORKSPACE/Simulators/NormLabSimulators_"+(numPopulation+1+strategyNum)+"\n";
-					break;
-				}
+			int launchCount = ExperimentLaunchListModel.getSize();
 
-				try
-				{
-					/* Create launcher output files*/
-					launcherFileWriter = new FileWriter(launcherFileName + (numPopulation+1) + ".sh");
-					launcherPrintWriter = new PrintWriter(launcherFileWriter);
+			for (int i = 0; i < launchCount; i++) {
+				try{
+					fichero = new FileWriter("batch/onlinecomm/launchers/cluster/Experiments_Launcher_"+(i+1)+".sh");
+					pw = new PrintWriter(fichero);
 
-					/* Add folders configuration */
-					for (int j = 0; j < foldersLine.size(); j++) {
-						launcherPrintWriter.write(foldersLine.get(j));
-						launcherPrintWriter.write("\n");
+
+					for (int j = 0; j < folders.size(); j++) {
+						pw.write(folders.get(j));
+						pw.write("\n");
 					}    
-					launcherPrintWriter.write(projectDir);
 
-					/* Prepare folders for the experiment */
-					String experimentsFolderNameWithParameters = "$NORMLAB_DIR/output/onlinecomm/" + experimentsFolderName + "-NSStrategy-" +
-							strategyName + "_Content-" + totalComments + "_Agents-" + numberAgents + "_Viol-" + normViolationRate + 
-							"_StopTick-"+stopTick;
-					
-					String population = getPopulationName(populationURL);
+					pw.write("PROJECT_DIR=$WORKSPACE/Simulators/NormLabSimulators_"+(i+1)+"\n");
 
-					/* Create new folder into the experiments folder. This new folder will 
-					 * keep all the files resulting from the experiments */
-					launcherPrintWriter.write("mkdir " + experimentsFolderNameWithParameters + "\n");
-					launcherPrintWriter.write("mkdir $NORMLAB_DIR/output/onlinecomm/norms\n");
+//					for (int j = 0; j < classpath.size(); j++) {
+//						pw.write(classpath.get(j));
+//						pw.write("\n");
+//					}
 
-					String simulationLauncherLine = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xms1024M "
-							+ "-Xmx1g repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/onlinecomm/batch_params.xml "
-							+ "$PROJECT_DIR/repast-settings/OnlineCommunity.rs > "+ experimentsFolderNameWithParameters +"/" + population + "-Run$i.log";
+					String populationURL = leerPopulationURL(i);
+					String nombreCarpetaConParametros = "$NORMLAB_DIR/output/onlinecomm/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick;
+					String poblacion = sacarNombrePoblacion(populationURL);
 
-					String populationSwitcherLine = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.PopulationSwitcher "
-							+ "$NORMLAB_DIR'/"+populationURL+"' $PROJECT_DIR'/files/onlinecomm/populations/population.xml' \n";
+					//Crear carpeta dentro de la carpeta de experiments para guardar todos los ficheros del experimento.
+					//				String nombreCarpetaConParametros = "Experiments/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick+"_run-"+a;
+					pw.write("mkdir "+nombreCarpetaConParametros+"\n");
+					pw.write("mkdir $NORMLAB_DIR/output/onlinecomm/norms\n");
 
-					String batchParamsSwitcherLine = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.BatchParamsSwitcher "+
-							totalComments+" "+numberAgents + " " + "" + normViolationRate + " " + stopTick + " " + population + " " + 
-							NormSynthesisStrategy.get(strategy) + " " + NormGeneralisationMode + " " + NormGeneralisationStep + " " + 
-							NormsGenEffThreshold + "" + " " + NormsGenNecThreshold + " " + NormsSpecEffThreshold + " " +
-							NormsSpecNecThreshold  +" " + NormsSpecThresholdEpsilon	+ " " + NormsMinEvaluations + " " +
-							NormsPerfRangeSize + " " +	NormsDefaultUtility + " " + NumTicksToConverge + " " + 
-							NormsWithUserId + " " + NormGenerationReactive + " "+ ContentsQueueSize + " "+batchDir+"\n";
-					
-					launcherPrintWriter.write("cd $NORMLAB_DIR\n");
+					//cambiarPoblacion (populationURL)
+					pw.write("cd $NORMLAB_DIR\n");
+//					String javaCambiarPopulation = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.PopulationSwitcher $NORMLAB_DIR'/"+populationURL+"' \n";
+					String javaCambiarPopulation = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.PopulationSwitcher '"+populationURL+"' \n";
+					pw.write(javaCambiarPopulation);
 
-					/* Change population and batch params */
-					launcherPrintWriter.write(populationSwitcherLine);
-					launcherPrintWriter.write(batchParamsSwitcherLine);
+					//cambiarBatchParams
+					String javaCambiarBatchParams = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.BatchParamsSwitcher "+totalComments+" "+numberAgents+" "+normViolationRate+" "+stopTick+" "+poblacion+"\n";
+					pw.write(javaCambiarBatchParams);
 
-					/* Copy experiment files to the corresponding folder */
-					launcherPrintWriter.write("cp $PROJECT_DIR/" + populationURL + " " + experimentsFolderNameWithParameters+"\n\n");
-					
-					launcherPrintWriter.write("echo \"Launching simulations for population \'" + population + "\'\"\n");
-					
-					launcherPrintWriter.write("for i in `seq "+ experimentRepetition +"`; do\n");
-					launcherPrintWriter.write("  cd $PROJECT_DIR\n");
+					//copiar ficheros a carpeta del experimento
+					//				String poblacion = sacarNombrePoblacion(populationURL);
+					pw.write("cp $PROJECT_DIR/" + populationURL + " " + nombreCarpetaConParametros+"\n\n");
 
-					/* Launch simulation */
-					launcherPrintWriter.write("  echo \"  Simulation number\" $i\n");
-					launcherPrintWriter.write("  " + simulationLauncherLine + "\n");
-					launcherPrintWriter.write("  cd $PROJECT_DIR/output/onlinecomm\n");
-					launcherPrintWriter.write("  mv " + experimentOutputFile + " " + experimentsFolderNameWithParameters+"/"+population+"-run$i.dat\n");
-					launcherPrintWriter.write("  mv ContentMetrics.dat " + experimentsFolderNameWithParameters+"/"+population+"-run$i-contentMetrics.dat\n");
-					launcherPrintWriter.write("  rm " + experimentOutputFile + "* \n");
-					launcherPrintWriter.write("  mv norms/ "+ experimentsFolderNameWithParameters+"/"+population+"-run$i-norms\n");
-//					launcherPrintWriter.write("  mv $NORMLAB_DIR/output/onlinecomm/" + population + "-Run$i.log " + experimentsFolderNameWithParameters + "\n" );
-					launcherPrintWriter.write("  mkdir norms\n");
-					launcherPrintWriter.write("done\n");
+					// TODO: Javi... elimino el for y lo pongo en el script...
+					//				for(int a = 1 ; a <= 100 ; a++){
 
-					launcherPrintWriter.write("mv Convergence.dat " + experimentsFolderNameWithParameters+"/"+population+"-Convergence.dat\n");
-					launcherPrintWriter.write("mv ComputationMetrics.dat " + experimentsFolderNameWithParameters+"/"+population+"-ComputationMetrics.dat\n");
-					launcherPrintWriter.write("mv ConvergedNormativeSystems " + experimentsFolderNameWithParameters+"/"+population+"-ConvergedNormativeSystems.dat\n");
-					launcherPrintWriter.write("mv ConvergedNormativeSystems.plot " + experimentsFolderNameWithParameters+"/"+population+"-ConvergedNormativeSystems.plot\n");
-					launcherPrintWriter.write("mv NotConvergedNormativeSystems " + experimentsFolderNameWithParameters+"/"+population+"-NotConvergedNormativeSystems.dat\n");
-					launcherPrintWriter.write("mv NotConvergedNormativeSystems.plot " + experimentsFolderNameWithParameters+"/"+population+"-NotConvergedNormativeSystems.plot\n");
-					launcherPrintWriter.write("mv FinalNorms " + experimentsFolderNameWithParameters+"/"+population+"-FinalNorms.dat\n");
-					launcherPrintWriter.write("mv FinalNorms.plot " + experimentsFolderNameWithParameters+"/"+population+"-FinalNorms.plot\n");
-					launcherPrintWriter.write("mv TotalNorms " + experimentsFolderNameWithParameters+"/"+population+"-TotalNorms.dat\n");
-					launcherPrintWriter.write("mv TotalNorms.plot " + experimentsFolderNameWithParameters+"/"+population+"-TotalNorms.plot\n");
-//					launcherPrintWriter.write("mv *.log " + experimentsFolderNameWithParameters+"/"+population+"\n");
+					pw.write("for i in `seq 10`; do\n");
 
-				}
-				catch (Exception e) {
+					pw.write("  cd $PROJECT_DIR\n");
+
+					//Ejecutar Repast
+					pw.write("  " + ejecutarRepast);
+
+					pw.write("  cd $PROJECT_DIR/output/onlinecomm\n");
+					// pw.write("  dataFile=`ls | grep 'ExperimentOutputData'`\n");
+					pw.write("  mv " + experimentOutputFile + " " + nombreCarpetaConParametros+"/"+poblacion+"-run$i.dat\n");
+
+					//Crear grafica del experimento
+					//pw.write("  cd $NORMLAB_DIR/batch/onlinecomm/scripts\n");
+					//pw.write("  python plotData.py " + nombreCarpetaConParametros+"/"+poblacion+"-run$i.dat\n");
+					//				pw.write("  mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+i+".png\n");
+					//				pw.write("  mv histogram.png "+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+i+".png\n");
+					//pw.write("  cd $PROJECT_DIR/output/onlinecomm\n");
+					pw.write("  rm " + experimentOutputFile + "* \n");
+					pw.write("  mv norms/ "+ nombreCarpetaConParametros+"/"+poblacion+"-run$i-norms\n");
+					pw.write("  mkdir norms\n");
+
+					//Crear grafica del experimento
+					//pw.write("python ../VirtualCommunitiesBatchLauncher/plotData.py ../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+					//pw.write("mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+a+".png\n");
+
+					//					pw.write("mv histogram.png ../../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+a+".png\n");
+					//					pw.write("cd $PROJECT_DIR/output/onlinecomm\n");
+					//				pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentOutput* \n");
+					//				pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentDataPopulation* \n");
+					pw.write("done\n");
+
+					//				}
+
+					pw.write("mv Convergence.dat " + nombreCarpetaConParametros+"/"+poblacion+"-Convergence.dat\n");
+					pw.write("mv ConvergedNormativeSystems " + nombreCarpetaConParametros+"/"+poblacion+"-ConvergedNormativeSystems.dat\n");
+					pw.write("mv ConvergedNormativeSystems.plot " + nombreCarpetaConParametros+"/"+poblacion+"-ConvergedNormativeSystems.plot\n");
+					pw.write("mv NotConvergedNormativeSystems " + nombreCarpetaConParametros+"/"+poblacion+"-NotConvergedNormativeSystems.dat\n");
+					pw.write("mv NotConvergedNormativeSystems.plot " + nombreCarpetaConParametros+"/"+poblacion+"-NotConvergedNormativeSystems.plot\n");
+					pw.write("mv FinalNorms " + nombreCarpetaConParametros+"/"+poblacion+"-FinalNorms.dat\n");
+					pw.write("mv FinalNorms.plot " + nombreCarpetaConParametros+"/"+poblacion+"-FinalNorms.plot\n");
+					pw.write("mv TotalNorms " + nombreCarpetaConParametros+"/"+poblacion+"-TotalNorms.dat\n");
+					pw.write("mv TotalNorms.plot " + nombreCarpetaConParametros+"/"+poblacion+"-TotalNorms.plot\n");
+
+//					
+//					pw.write("for i in `seq 10`; do\n");
+	//
+//					pw.write("  cd $PROJECT_DIR\n");
+	//
+//					//Ejecutar Repast
+//					pw.write("  " + ejecutarRepast);
+	//
+//					pw.write("  cd $PROJECT_DIR/output/onlinecomm\n");
+//					pw.write("  dataFile=`ls | grep 'ExperimentOutputData'`");
+//					pw.write("  mv $PROJECT_DIR/output/onlinecomm/$dataFile "+nombreCarpetaConParametros+"/"+poblacion+"-run$i.dat\n");
+	//
+//					//Crear grafica del experimento
+//					//pw.write("python ../VirtualCommunitiesBatchLauncher/plotData.py ../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+//					//pw.write("mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+a+".png\n");
+	//
+//					//					pw.write("mv histogram.png ../../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+a+".png\n");
+//					//					pw.write("cd $PROJECT_DIR/output/onlinecomm\n");
+//					pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentOutput* \n");
+//					pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentDataPopulation* \n");
+//					pw.write("done\n");
+	//
+//					//				}
+	//
+//					pw.write("mv $PROJECT_DIR/output/onlinecomm/Convergence.dat "+nombreCarpetaConParametros+"/"+poblacion+"-Convergence.dat\n");
+	//
+	//
+//					//				pw.write("cd $PROJECT_DIR/\n");
+//					//				pw.write("mv $PROJECT_DIR/ExperimentsOutputData/Convergence.dat ../VirtualCommunitiesSimulation/" + nombreCarpetaConParametros + "/" + poblacion+ "-Convergence.dat\n");
+				} catch (Exception e) {
 					e.printStackTrace();
-				}
-				finally {
+				} finally {
 					try {
-						/* Close output files */
-						if (null != launcherFileWriter)
-							launcherFileWriter.close();
-					}
-					catch (Exception e2) {
+						// Nuevamente aprovechamos el finally para
+						// asegurarnos que se cierra el fichero.
+						if (null != fichero)
+							fichero.close();
+					} catch (Exception e2) {
 						e2.printStackTrace();
 					}
 				}
-			} 
-		}
-	}
+			}
+  }
 
 	/**
 	 * 
-	 * @param populationURL
-	 * @return
 	 */
-	private String getPopulationName(String populationURL) {
+	private void crearBashFuncionaUnaEjecucion() {
+		ArrayList<String> classpath = leerFichero("batch/onlinecomm/classpath/AsukaPC-Classpath.txt");
+		
+
+		String nombreCarpeta = ExperimentName.getText();
+		String experimentOutputFile = "ExperimentOutputData";
+
+		FileWriter fichero = null;
+		PrintWriter pw = null;
+
+		//		String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xmx400M repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/batch_params.xml $PROJECT_DIR/virtualCommunities.rs\n";
+		//		String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xmx400M repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/onlinecomm/batch_params.xml $PROJECT_DIR/repast-settings/OnlineCommunity.rs\n";
+		String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xms400M -Xmx1g repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/onlinecomm/batch_params.xml $PROJECT_DIR/repast-settings/OnlineCommunity.rs\n";
+
+		int launchCount = ExperimentLaunchListModel.getSize();
+
+		for (int i = 0; i < launchCount; i++) {
+			try{
+				fichero = new FileWriter("batch/onlinecomm/launchers/pc/Experiments_Launcher_"+(i+1)+".sh");
+				pw = new PrintWriter(fichero);
+
+
+				for (int j = 0; j < classpath.size(); j++) {
+					pw.write(classpath.get(j));
+					pw.write("\n");
+				}    
+
+				String populationURL = leerPopulationURL(i);
+				String nombreCarpetaConParametros = "$NORMLAB_DIR/output/onlinecomm/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick;
+				String poblacion = sacarNombrePoblacion(populationURL);
+
+				//Crear carpeta dentro de la carpeta de experiments para guardar todos los ficheros del experimento.
+				//				String nombreCarpetaConParametros = "Experiments/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick+"_run-"+a;
+				pw.write("mkdir "+nombreCarpetaConParametros+"\n");
+				pw.write("mkdir $NORMLAB_DIR/output/onlinecomm/norms\n");
+				//cambiarPoblacion (populationURL)
+				String javaCambiarPopulation = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.PopulationSwitcher '"+populationURL+"' \n";
+				pw.write(javaCambiarPopulation);
+
+				//cambiarBatchParams
+				String javaCambiarBatchParams = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.BatchParamsSwitcher "+totalComments+" "+numberAgents+" "+normViolationRate+" "+stopTick+" "+poblacion+"\n";
+				pw.write(javaCambiarBatchParams);
+
+				//copiar ficheros a carpeta del experimento
+				//				String poblacion = sacarNombrePoblacion(populationURL);
+				pw.write("cp " + populationURL + " " + nombreCarpetaConParametros+"\n\n");
+
+				// TODO: Javi... elimino el for y lo pongo en el script...
+				//				for(int a = 1 ; a <= 100 ; a++){
+
+				pw.write("for i in `seq 10`; do\n");
+
+				pw.write("  cd $PROJECT_DIR\n");
+
+				//Ejecutar Repast
+				pw.write("  " + ejecutarRepast);
+
+				pw.write("  cd $PROJECT_DIR/output/onlinecomm\n");
+				// pw.write("  dataFile=`ls | grep 'ExperimentOutputData'`\n");
+				pw.write("  mv " + experimentOutputFile + " " + nombreCarpetaConParametros+"/"+poblacion+"-run$i.dat\n");
+
+				//Crear grafica del experimento
+				//pw.write("  cd $NORMLAB_DIR/batch/onlinecomm/scripts\n");
+				//pw.write("  python plotData.py " + nombreCarpetaConParametros+"/"+poblacion+"-run$i.dat\n");
+				//				pw.write("  mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+i+".png\n");
+				//				pw.write("  mv histogram.png "+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+i+".png\n");
+				//pw.write("  cd $PROJECT_DIR/output/onlinecomm\n");
+				pw.write("  rm " + experimentOutputFile + "* \n");
+				pw.write("  mv norms/ "+ nombreCarpetaConParametros+"/"+poblacion+"-run$i-norms\n");
+				pw.write("  mkdir norms\n");
+
+				//Crear grafica del experimento
+				//pw.write("python ../VirtualCommunitiesBatchLauncher/plotData.py ../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+				//pw.write("mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+a+".png\n");
+
+				//					pw.write("mv histogram.png ../../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+a+".png\n");
+				//					pw.write("cd $PROJECT_DIR/output/onlinecomm\n");
+				//				pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentOutput* \n");
+				//				pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentDataPopulation* \n");
+				pw.write("done\n");
+
+				//				}
+
+				pw.write("mv Convergence.dat " + nombreCarpetaConParametros+"/"+poblacion+"-Convergence.dat\n");
+				pw.write("mv ConvergedNormativeSystems " + nombreCarpetaConParametros+"/"+poblacion+"-ConvergedNormativeSystems.dat\n");
+				pw.write("mv ConvergedNormativeSystems.plot " + nombreCarpetaConParametros+"/"+poblacion+"-ConvergedNormativeSystems.plot\n");
+				pw.write("mv FinalNorms " + nombreCarpetaConParametros+"/"+poblacion+"-FinalNorms.dat\n");
+				pw.write("mv FinalNorms.plot " + nombreCarpetaConParametros+"/"+poblacion+"-FinalNorms.plot\n");
+				pw.write("mv TotalNorms " + nombreCarpetaConParametros+"/"+poblacion+"-TotalNorms.dat\n");
+				pw.write("mv TotalNorms.plot " + nombreCarpetaConParametros+"/"+poblacion+"-TotalNorms.plot\n");
+
+				//				pw.write("cd $PROJECT_DIR/\n");
+				//				pw.write("mv $PROJECT_DIR/ExperimentsOutputData/Convergence.dat ../VirtualCommunitiesSimulation/" + nombreCarpetaConParametros + "/" + poblacion+ "-Convergence.dat\n");
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					// Nuevamente aprovechamos el finally para
+					// asegurarnos que se cierra el fichero.
+					if (null != fichero)
+						fichero.close();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+			}
+		}
+
+		//		
+		//		
+		//		
+		//		
+		//		String nombreCarpeta = ExperimentName.getText();
+		//
+		//		FileWriter fichero = null;
+		//		PrintWriter pw = null;
+		//		//String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xmx400M repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/batch_params.xml $PROJECT_DIR/virtualCommunities.rs\n";
+		//		String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xmx400M repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/batch_params.xml $PROJECT_DIR/repast-settings/OnlineCommunity.rs\n";
+		//		try{
+		//			fichero = new FileWriter("Experiments_Launcher.sh");
+		//			pw = new PrintWriter(fichero);
+		//
+		//			for(int i = 0 ; i < lectura.size() ; i++){
+		//				pw.write(lectura.get(i));
+		//				pw.write("\n");
+		//			}
+		//
+		//			int launchCount = ExperimentLaunchListModel.getSize();
+		//			for(int i = 0 ; i < launchCount ; i++){
+		//				String populationURL = leerPopulationURL(i);
+		//				String nombreCarpetaConParametros = "Experiments/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick;
+		//				String poblacion = sacarNombrePoblacion(populationURL);
+		//
+		//				for(int a = 1 ; a <= 10 ; a++){
+		//
+		//					//Crear carpeta dentro de la carpeta de experiments para guardar todos los ficheros del experimento.
+		//					//					String nombreCarpetaConParametros = "Experiments/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick+"_run-"+a;
+		//					pw.write("mkdir "+nombreCarpetaConParametros+"\n");
+		//
+		//					//cambiarPoblacion (populationURL)
+		//					String javaCambiarPopulation = "java -cp ../simulatorsTools/CambiarPopulation/bin Cambiar '"+populationURL+"' \n";
+		//					pw.write(javaCambiarPopulation);
+		//
+		//					//cambiarBatchParams
+		//					String javaCambiarBatchParams = "java -cp ../simulatorsTools/CambiarBatchParams/bin Principal "+totalComments+" "+numberAgents+" "+normViolationRate+" "+stopTick+" "+poblacion+"\n";
+		//					pw.write(javaCambiarBatchParams);
+		//
+		//					//Ejecutar Repast
+		//					pw.write(ejecutarRepast);
+		//
+		//					//copiar ficheros a carpeta del experimento
+		//					//					String poblacion = sacarNombrePoblacion(populationURL);
+		//					pw.write("cp " + populationURL + " " + nombreCarpetaConParametros+"\n");
+		//
+		//					//BatchParams
+		//					/*pw.write("cd $PROJECT_DIR/ExperimentsOutputData/\n");
+		//					pw.write("batchParams=`ls | grep '\\<batch_param'`\ncd ..\n");
+		//					pw.write("mv ../VirtualCommunitiesSimulation/ExperimentsOutputData/$batchParams ../VirtualCommunitiesSimulation/"+nombreCarpetaConParametros+"/"+poblacion+"-BatchParams.dat\n");
+		//					 */
+		//					//Data file
+		//					pw.write("cd $PROJECT_DIR/output/onlinecomm\n");
+		//					pw.write("dataFile=`ls | grep 'ExperimentOutputData'`\ncd ../../\n");
+		//					pw.write("mv ../NormLab/output/onlinecomm/$dataFile ../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+		//
+		//					//Crear grafica del experimento
+		//					pw.write("python ../VirtualCommunitiesBatchLauncher/plotData.py ../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+		//					pw.write("mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+a+".png\n");
+		//
+		//					pw.write("mv histogram.png "+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+a+".png\n");
+		//					pw.write("cd $PROJECT_DIR/output/onlinecomm\n");
+		//					pw.write("rm ExperimentOutput* \ncd ../../\n");
+		//
+		//
+		//				}
+		//				pw.write("cd $PROJECT_DIR/\n");
+		//				pw.write("mv output/onlinecomm/Convergence.dat "+nombreCarpetaConParametros+"/"+poblacion+"-Convergence.dat\n");
+		//
+		//			}
+		//			pw.write("popd");
+		//
+		//		}catch (Exception e) {
+		//			e.printStackTrace();
+		//		}finally{
+		//			try{
+		//				// Nuevamente aprovechamos el finally para 
+		//				// asegurarnos que se cierra el fichero.
+		//				if (null != fichero)
+		//					fichero.close();
+		//			} catch (Exception e2) {
+		//				e2.printStackTrace();
+		//			}
+		//		}	
+	}
+
+	//	private void crearBashParaCluster() {
+	//		ArrayList<String> lectura = leerFichero("Cluster-Classpath.txt");
+	//
+	//		String nombreCarpeta = ExperimentName.getText();
+	//
+	//		FileWriter fichero = null;
+	//		PrintWriter pw = null;
+	//		String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xmx400M repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/batch_params.xml $PROJECT_DIR/virtualCommunities.rs\n";
+	//
+	//		int launchCount = ExperimentLaunchListModel.getSize();
+	//		try{
+	//			fichero = new FileWriter("Experiments_Launcher.sh");
+	//			pw = new PrintWriter(fichero);
+	//			for (int j = 0; j < lectura.size(); j++) {
+	//				pw.write(lectura.get(j));
+	//				pw.write("\n");
+	//			}
+	//			for (int i = 0; i < launchCount; i++) {
+	//				String populationURL = leerPopulationURL(i);
+	//				String poblacion = sacarNombrePoblacion(populationURL);
+	//
+	//				String nombreCarpetaConParametros = "Experiments/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick;
+	//
+	//
+	//
+	//				pw.write("cd $PROJECT_DIR\n");
+	//
+	//				//Crear carpeta dentro de la carpeta de experiments para guardar todos los ficheros del experimento.
+	//				pw.write("mkdir "+nombreCarpetaConParametros+"\n");
+	//				pw.write("cd Experiments/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick+"\n");
+	//
+	//				pw.write("mkdir "+poblacion+"\n");
+	//				pw.write("cd $PROJECT_DIR\n");
+	//
+	//				String javaCambiarPopulation = "java -cp ../CambiarPopulation/bin Cambiar '"+populationURL+"' \n";
+	//				pw.write(javaCambiarPopulation);
+	//
+	//				//cambiarBatchParams
+	//				String javaCambiarBatchParams = "java -cp ../CambiarBatchParams/bin Principal "+totalComments+" "+numberAgents+" "+normViolationRate+" "+stopTick+" "+poblacion+"\n";
+	//				pw.write(javaCambiarBatchParams);
+	//
+	//				//copiar ficheros a carpeta del experimento
+	//				pw.write("cp " + populationURL + " " + nombreCarpetaConParametros+"/"+poblacion+"\n");
+	//
+	//				pw.write("for i in `seq 1 100`; do\n");
+	//				//Ejecutar Repast
+	//				//pw.write("cd ../VirtualCommunitiesBatchLauncher/\n");
+	//
+	//
+	//				//pw.write("qsub CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xmx400M repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/batch_params.xml $PROJECT_DIR/virtualCommunities.rs\n");
+	//				//pw.write("done\n");
+	//
+	//				pw.write("qsub ../VirtualCommunitiesBatchLauncher/ejecutarSimulador.sh\ndone\n");
+	//				pw.write("while [ `ls ExperimentsOutputData | grep 'ExperimentOutput' | wc -l` -lt 100 ]\ndo\nsleep 30\ndone\n");
+	//
+	//				pw.write("cd $PROJECT_DIR/ExperimentsOutputData\n");
+	//				pw.write("rm `ls | grep 'Data'`\n");
+	//
+	//				pw.write("mv `ls | grep 'ExperimentOutput'` /gpfs/home/iosu/workspace/VirtualCommunitiesSimulation/"+nombreCarpetaConParametros+"/"+poblacion+"\n");
+	//
+	//				//BatchParams
+	//				/*pw.write("cd $PROJECT_DIR/ExperimentsOutputData/\n");
+	//				pw.write("batchParams=`ls | grep '\\<batch_param'`\ncd ..\n");
+	//				pw.write("mv $PROJECT_DIR/ExperimentsOutputData/$batchParams ../VirtualCommunitiesSimulation/"+nombreCarpetaConParametros+"/"+poblacion+"-BatchParams.dat\n");
+	//
+	//				//Data file
+	//				pw.write("cd $PROJECT_DIR/ExperimentsOutputData/\n");
+	//				pw.write("dataFile=`ls | grep 'ExperimentData"+poblacion+"'`\ncd ..\n");
+	//				pw.write("mv $PROJECT_DIR/ExperimentsOutputData/$dataFile ../VirtualCommunitiesSimulation/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+	//
+	//				//Crear grafica del experimento
+	//				pw.write("#python ../VirtualCommunitiesBatchLauncher/plotData.py ../VirtualCommunitiesSimulation/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+	//				pw.write("#mv $PROJECT_DIR/ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+a+".png\n");
+	//
+	//				pw.write("mv $PROJECT_DIR/histogram.png ../VirtualCommunitiesSimulation/"+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+a+".png\n");
+	//				 */
+	//
+	//				pw.write("cd $PROJECT_DIR/\n");
+	//				pw.write("mv $PROJECT_DIR/ExperimentsOutputData/Convergence.dat ../VirtualCommunitiesSimulation/" + nombreCarpetaConParametros + "/" + poblacion+ "-Convergence.dat\n");
+	//			}
+	//		} catch (Exception e) {
+	//			e.printStackTrace();
+	//		} finally {
+	//			try {
+	//				// Nuevamente aprovechamos el finally para
+	//				// asegurarnos que se cierra el fichero.
+	//				if (null != fichero)
+	//					fichero.close();
+	//			} catch (Exception e2) {
+	//				e2.printStackTrace();
+	//			}
+	//		}
+	//
+	//	}
+
+	private void createClusterBatchLauncher() {
+
+		ArrayList<String> folders = leerFichero("batch/onlinecomm/classpath/Cluster-Folders.txt");
+		ArrayList<String> classpath = leerFichero("batch/onlinecomm/classpath/Cluster-Classpath.txt");
+
+		String nombreCarpeta = ExperimentName.getText();
+		String experimentOutputFile = "ExperimentOutputData";
+
+		FileWriter fichero = null;
+		PrintWriter pw = null;
+
+		//		String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xmx400M repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/batch_params.xml $PROJECT_DIR/virtualCommunities.rs\n";
+		String ejecutarRepast = "CLASSPATH=$CLASSPATH $JAVA_EXECUTABLE $JAVA_FLAGS -Xss10M -Xms400M -Xmx1g repast.simphony.batch.BatchMain -params $PROJECT_DIR/batch/onlinecomm/batch_params.xml $PROJECT_DIR/repast-settings/OnlineCommunity.rs\n";
+
+		int launchCount = ExperimentLaunchListModel.getSize();
+
+		for (int i = 0; i < launchCount; i++) {
+			try{
+				fichero = new FileWriter("batch/onlinecomm/launchers/cluster/Experiments_Launcher_"+(i+1)+".sh");
+				pw = new PrintWriter(fichero);
+
+
+				for (int j = 0; j < folders.size(); j++) {
+					pw.write(folders.get(j));
+					pw.write("\n");
+				}    
+
+				pw.write("PROJECT_DIR=$WORKSPACE/Simulators/NormLabSimulators_"+(i+1)+"\n");
+
+				for (int j = 0; j < classpath.size(); j++) {
+					pw.write(classpath.get(j));
+					pw.write("\n");
+				}
+
+				String populationURL = leerPopulationURL(i);
+				String nombreCarpetaConParametros = "$NORMLAB_DIR/output/onlinecomm/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick;
+				String poblacion = sacarNombrePoblacion(populationURL);
+
+				//Crear carpeta dentro de la carpeta de experiments para guardar todos los ficheros del experimento.
+				//				String nombreCarpetaConParametros = "Experiments/"+nombreCarpeta +"_Content-"+totalComments+"_Agents-"+numberAgents+"_Viol-"+normViolationRate+"_StopTick-"+stopTick+"_run-"+a;
+				pw.write("mkdir "+nombreCarpetaConParametros+"\n");
+				pw.write("mkdir $NORMLAB_DIR/output/onlinecomm/norms\n");
+
+				//cambiarPoblacion (populationURL)
+				String javaCambiarPopulation = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.PopulationSwitcher '"+populationURL+"' \n";
+				pw.write(javaCambiarPopulation);
+
+				//cambiarBatchParams
+				String javaCambiarBatchParams = "java -cp $PROJECT_DIR/bin es.csic.iiia.normlab.onlinecomm.batch.BatchParamsSwitcher "+totalComments+" "+numberAgents+" "+normViolationRate+" "+stopTick+" "+poblacion+"\n";
+				pw.write(javaCambiarBatchParams);
+
+				//copiar ficheros a carpeta del experimento
+				//				String poblacion = sacarNombrePoblacion(populationURL);
+				pw.write("cp " + populationURL + " " + nombreCarpetaConParametros+"\n\n");
+
+				// TODO: Javi... elimino el for y lo pongo en el script...
+				//				for(int a = 1 ; a <= 100 ; a++){
+
+				
+				pw.write("for i in `seq 10`; do\n");
+
+				pw.write("  cd $PROJECT_DIR\n");
+
+				//Ejecutar Repast
+				pw.write("  " + ejecutarRepast);
+
+				pw.write("  cd $PROJECT_DIR/output/onlinecomm\n");
+				// pw.write("  dataFile=`ls | grep 'ExperimentOutputData'`\n");
+				pw.write("  mv " + experimentOutputFile + " " + nombreCarpetaConParametros+"/"+poblacion+"-run$i.dat\n");
+
+				//Crear grafica del experimento
+				//pw.write("  cd $NORMLAB_DIR/batch/onlinecomm/scripts\n");
+				//pw.write("  python plotData.py " + nombreCarpetaConParametros+"/"+poblacion+"-run$i.dat\n");
+				//				pw.write("  mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+i+".png\n");
+				//				pw.write("  mv histogram.png "+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+i+".png\n");
+				//pw.write("  cd $PROJECT_DIR/output/onlinecomm\n");
+				pw.write("  rm " + experimentOutputFile + "* \n");
+				pw.write("  mv norms/ "+ nombreCarpetaConParametros+"/"+poblacion+"-run$i-norms\n");
+				pw.write("  mkdir norms\n");
+
+				//Crear grafica del experimento
+				//pw.write("python ../VirtualCommunitiesBatchLauncher/plotData.py ../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+				//pw.write("mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+a+".png\n");
+
+				//					pw.write("mv histogram.png ../../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+a+".png\n");
+				//					pw.write("cd $PROJECT_DIR/output/onlinecomm\n");
+				//				pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentOutput* \n");
+				//				pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentDataPopulation* \n");
+				pw.write("done\n");
+
+				//				}
+
+				pw.write("mv Convergence.dat " + nombreCarpetaConParametros+"/"+poblacion+"-Convergence.dat\n");
+				pw.write("mv ConvergedNormativeSystems " + nombreCarpetaConParametros+"/"+poblacion+"-ConvergedNormativeSystems.dat\n");
+				pw.write("mv ConvergedNormativeSystems.plot " + nombreCarpetaConParametros+"/"+poblacion+"-ConvergedNormativeSystems.plot\n");
+				pw.write("mv FinalNorms " + nombreCarpetaConParametros+"/"+poblacion+"-FinalNorms.dat\n");
+				pw.write("mv FinalNorms.plot " + nombreCarpetaConParametros+"/"+poblacion+"-FinalNorms.plot\n");
+				pw.write("mv TotalNorms " + nombreCarpetaConParametros+"/"+poblacion+"-TotalNorms.dat\n");
+				pw.write("mv TotalNorms.plot " + nombreCarpetaConParametros+"/"+poblacion+"-TotalNorms.plot\n");
+
+//				
+//				pw.write("for i in `seq 10`; do\n");
+//
+//				pw.write("  cd $PROJECT_DIR\n");
+//
+//				//Ejecutar Repast
+//				pw.write("  " + ejecutarRepast);
+//
+//				pw.write("  cd $PROJECT_DIR/output/onlinecomm\n");
+//				pw.write("  dataFile=`ls | grep 'ExperimentOutputData'`");
+//				pw.write("  mv $PROJECT_DIR/output/onlinecomm/$dataFile "+nombreCarpetaConParametros+"/"+poblacion+"-run$i.dat\n");
+//
+//				//Crear grafica del experimento
+//				//pw.write("python ../VirtualCommunitiesBatchLauncher/plotData.py ../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-run"+a+".dat\n");
+//				//pw.write("mv ExperimentGraphic.png "+nombreCarpetaConParametros+"/"+poblacion+"-Graphic-run"+a+".png\n");
+//
+//				//					pw.write("mv histogram.png ../../NormLab/"+nombreCarpetaConParametros+"/"+poblacion+"-Histogram-run"+a+".png\n");
+//				//					pw.write("cd $PROJECT_DIR/output/onlinecomm\n");
+//				pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentOutput* \n");
+//				pw.write("  rm $PROJECT_DIR/output/onlinecomm/ExperimentDataPopulation* \n");
+//				pw.write("done\n");
+//
+//				//				}
+//
+//				pw.write("mv $PROJECT_DIR/output/onlinecomm/Convergence.dat "+nombreCarpetaConParametros+"/"+poblacion+"-Convergence.dat\n");
+//
+//
+//				//				pw.write("cd $PROJECT_DIR/\n");
+//				//				pw.write("mv $PROJECT_DIR/ExperimentsOutputData/Convergence.dat ../VirtualCommunitiesSimulation/" + nombreCarpetaConParametros + "/" + poblacion+ "-Convergence.dat\n");
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					// Nuevamente aprovechamos el finally para
+					// asegurarnos que se cierra el fichero.
+					if (null != fichero)
+						fichero.close();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	private String sacarNombrePoblacion(String populationURL) {
 		String[] cadena = populationURL.split("\\/");
 		String[] cadena2 = cadena[cadena.length - 1].split("\\.");
 		return cadena2[0];
 	}
 
-	/**
-	 * 
-	 * @param fichero
-	 * @return
-	 */
-	private ArrayList<String> readFile(String fichero) {
+	private ArrayList<String> leerFichero(String fichero) {
 		File archivo = null;
 		FileReader fr = null;
 		BufferedReader br = null;
@@ -480,12 +845,115 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 		return texto;
 	}
 
-	/**
-	 * 
-	 * @param i
-	 * @return
-	 */
-	private String getPopulationURL(int i) {
+	private void launchExperiments() {
+		int launchCount = ExperimentLaunchListModel.getSize();
+		for(int i = 0 ; i < launchCount ; i++){
+			String populationURL = leerPopulationURL(i);
+			copiarPopulation(populationURL);
+			cambiarBathParams();
+
+			//ejecutar();	
+		}
+		System.out.println("Launch finished....");
+	}
+
+	private void ejecutar(){
+		try 
+		{
+			StringBuilder sb = new StringBuilder(2000);
+			Reader r;
+			int ch;
+
+			Runtime run = Runtime.getRuntime();
+			String[] cmd = {"/bin/bash", "-c", "./launch.sh"};
+			Process p = run.exec(cmd);
+
+			//			ProcessBuilder pb = new ProcessBuilder("bash", "launch.sh");
+			//			Process p = pb.start();
+
+			r = new InputStreamReader(p.getInputStream());
+
+			while((ch = r.read()) != -1) {
+				sb.append((char)ch);
+			}
+			//p.waitFor();
+			System.out.println(sb);			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+
+	private void cambiarBathParams() {
+		try {
+			File file = new File("../VirtualCommunitiesSimulation/batch/batch_params.xml");
+
+			//Create instance of DocumentBuilderFactory
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+			//Get the DocumentBuilder
+			DocumentBuilder docBuilder = factory.newDocumentBuilder();
+
+			//Using existing XML Document
+			Document doc = docBuilder.parse(file);
+
+			NodeList nList = doc.getElementsByTagName("parameter");
+
+			for (int temp = 0; temp < nList.getLength(); temp++) {
+
+				Node nNode = nList.item(temp);
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+
+					Element eElement = (Element) nNode;
+					if(eElement.getAttribute("name").equals("Total Comments")){
+						eElement.setAttribute("value", ""+totalComments);
+					}
+					if(eElement.getAttribute("name").equals("maxAgents")){
+						eElement.setAttribute("value", ""+numberAgents);
+					}
+					if(eElement.getAttribute("name").equals("Norm Violation Rate")){
+						eElement.setAttribute("value", ""+normViolationRate);
+					}
+					if(eElement.getAttribute("name").equals("StopTick")){
+						eElement.setAttribute("value", ""+stopTick);
+					}
+				}
+
+			}
+			//set up a transformer
+			TransformerFactory transfac = TransformerFactory.newInstance();
+			Transformer trans = transfac.newTransformer();
+
+			//create string from xml tree
+			StringWriter sw = new StringWriter();
+			StreamResult result = new StreamResult(sw);
+			DOMSource source = new DOMSource(doc);
+			trans.transform(source, result);
+			String xmlString = sw.toString();
+
+			OutputStream f0;
+
+			byte buf[] = xmlString.getBytes();
+			f0 = new FileOutputStream("../VirtualCommunitiesSimulation/batch/batch_params.xml");
+			for(int i=0;i<buf .length;i++) {
+				f0.write(buf[i]);
+			}
+			f0.close();
+			buf = null;
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+		catch(ParserConfigurationException e) {
+			e.printStackTrace();
+		} 
+		catch(TransformerException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private String leerPopulationURL(int i) {
 		String populationURL = null;
 		try {
 
@@ -517,5 +985,30 @@ public class ExperimentLauncherCreator extends JFrame implements ActionListener 
 			e.printStackTrace();
 		}	
 		return populationURL;
+	}
+
+	private void copiarPopulation(String populationURL) {
+		System.out.println(populationURL);
+		File origen = new File(populationURL);
+		File destino = new File("../VirtualCommunitiesSimulation/Experiments/population.xml");
+
+		InputStream in;
+		OutputStream out;
+		try {
+			in = new FileInputStream(origen);
+			out = new FileOutputStream(destino);
+			byte[] buf = new byte[1024];
+			int len;
+
+			while ((len = in.read(buf)) > 0) {
+				out.write(buf, 0, len);
+			}
+			in.close();
+			out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

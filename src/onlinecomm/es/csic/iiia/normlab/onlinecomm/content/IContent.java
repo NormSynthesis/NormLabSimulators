@@ -18,8 +18,6 @@ public interface IContent {
 	public int getNumViews();
 	public void setNumViews(int numViews);
 	public int getType();
-	public double getTick();
-	public void setTick(double tick);
 	public IComplaint getComplaint();
 	public void setComplain(IComplaint complaint);
 	public int getId();

@@ -12,6 +12,6 @@
     <string>SettingsRegistryId</string>
     <string>Repast.registry</string>
     <string>LastLoadedScenario</string>
-    <string>C:\Users\Javi\workspace\NormLabSimulators\repast-settings\TrafficJunction.rs</string>
+    <string>/home/javi/Proyectos/Eclipse/NormLabSimulators/repast-settings/OnlineCommunity.rs</string>
   </hashtable>
 </simphony.settings.SettingsRegistry>

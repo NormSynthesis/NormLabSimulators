@@ -1,24 +1,24 @@
 /*Triggers*/
 /*Norms and Incrementation of counters*/
 DELIMITER $$
-CREATE TRIGGER create_upload_event_trigger
-	AFTER INSERT ON content
-	FOR EACH ROW
-	BEGIN
-		/*Creation fo the event upload */
-		INSERT INTO event(user, content, action, checked) VALUES (NEW.owner, NEW.id, 1, 0);
-	END$$
-DELIMITER ;
-
-DELIMITER $$
 CREATE TRIGGER create_view_event_trigger
 	AFTER INSERT ON view
 	FOR EACH ROW
 	BEGIN
 		/*Creation fo the event view */
-		INSERT INTO event(user, content, action, checked) VALUES (NEW.user, NEW.content, 2, 0);
+		INSERT INTO event(user, content, action, checked) VALUES (NEW.user, NEW.content, 1, 0);
 		/* Increment of the counter of the content views*/
 		UPDATE content SET num_of_views = num_of_views+1 WHERE content.id = NEW.content;
+	END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER create_upload_event_trigger
+	AFTER INSERT ON user_content
+	FOR EACH ROW
+	BEGIN
+		/*Creation fo the event upload */
+		INSERT INTO event(user, content, action, checked) VALUES (NEW.user, NEW.content, 2, 0);
 	END$$
 DELIMITER ;
 

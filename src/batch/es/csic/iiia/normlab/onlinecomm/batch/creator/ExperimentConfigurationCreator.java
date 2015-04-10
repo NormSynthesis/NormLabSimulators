@@ -37,8 +37,6 @@ public class ExperimentConfigurationCreator {
 	int contentsPerCommunityAgent = 5000;
 	int agents = 10;
 	int runs = 3;
-	
-	double uploadProb = 0.05;
 
 	int cuenta = 0;
 	int cuenta2 = 0;
@@ -53,8 +51,6 @@ public class ExperimentConfigurationCreator {
 	double medium = 0.5;
 	double high = 0.7;
 
-	int violationRates = 1; //3 violation rates 0.3, 0.5, 0.7 if you want only 0.3 change to 1
-	
 	UploadProfile up;
 	ViewProfile vp;
 	ComplaintProfile cp;
@@ -84,9 +80,9 @@ public class ExperimentConfigurationCreator {
 		combinations.add(high);
 
 		cpCombinations = new ArrayList<Double>();
-//		cpCombinations.add(low);
-//		cpCombinations.add(medium);
-//		cpCombinations.add(high);
+		cpCombinations.add(low);
+		cpCombinations.add(medium);
+		cpCombinations.add(high);
 		cpCombinations.add(1.0);
 		/*cpCombinations.add(0.275);
 		cpCombinations.add(0.375);
@@ -134,23 +130,18 @@ public class ExperimentConfigurationCreator {
 		double popu3=0;
 		double cp1;
 
-		for(int i = 0 ; i < combinations.size() ; i++){
-			popu1 = combinations.get(i);
+		for(int i = 0 ; i < combinationsMixedPopu.size() ; i++){
+			popu1 = combinationsMixedPopu.get(i);
 			popu2 = 1 - popu1;
-//			BigDecimal aux = new BigDecimal(Double.toString(popu2));
-//			aux.setScale(1, BigDecimal.ROUND_HALF_DOWN);
-//			popu2 = aux.doubleValue();
-			
-			System.out.println(popu2);
-			if(popu2 == 0.7){
-				popu2 = 0.35;
-				popu3 = 0.35;
+			if(popu2 == 0.8){
+				popu2 = 0.3;
+				popu3 = 0.5;
+			}else if(popu2 == 0.7){
+				popu2 = 0.2;
+				popu3 = 0.5;
 			}else if(popu2 == 0.5){
-				popu2 = 0.25;
-				popu3 = 0.25;
-			}else if(popu2 <= 0.31){
-				popu2 = 0.15;
-				popu3 = 0.15;
+				popu2 = 0.2;
+				popu3 = 0.3;
 			}
 
 			for(int j = 0 ; j < cpCombinations.size() ; j++){
@@ -161,45 +152,6 @@ public class ExperimentConfigurationCreator {
 			}
 		}
 	}
-
-//	private void mixedPopulationOld() {
-//		System.out.println("Choose three agent types:\n\tModerate (1)\n\tSpammer (2)\n\tPornographic (3)\n\tViolent (4)\n\tRude(5)");
-//		int type1 = teclado.nextInt();
-//		System.out.println("The second type:");
-//		int type2 = teclado.nextInt();
-//		System.out.println("The third type:");
-//		int type3 = teclado.nextInt();
-//
-//		System.out.println("How many agents:");
-//		quantity = teclado.nextInt();
-//
-//		double popu1=0;
-//		double popu2=0;
-//		double popu3=0;
-//		double cp1;
-//
-//		for(int i = 0 ; i < combinationsMixedPopu.size() ; i++){
-//			popu1 = combinationsMixedPopu.get(i);
-//			popu2 = 1 - popu1;
-//			if(popu2 == 0.8){
-//				popu2 = 0.3;
-//				popu3 = 0.5;
-//			}else if(popu2 == 0.7){
-//				popu2 = 0.2;
-//				popu3 = 0.5;
-//			}else if(popu2 == 0.5){
-//				popu2 = 0.2;
-//				popu3 = 0.3;
-//			}
-//
-//			for(int j = 0 ; j < cpCombinations.size() ; j++){
-//				cp1 = cpCombinations.get(j);
-//				poblacion = crearPoblacion(type1, popu1, cp1, type2, popu2, type3, popu3, quantity);
-//				crearExperimento(poblacion);
-//
-//			}
-//		}
-//	}
 
 	/**
 	 * 
@@ -223,7 +175,7 @@ public class ExperimentConfigurationCreator {
 		CommunityAgent b = createCommunityAgent(type2, 0, quantity2);
 		agentArray.add(b);
 		int quantity3 = (int) (popu3 * quantity);
-		CommunityAgent c = createCommunityAgent(type3, 0, quantity3);
+		CommunityAgent c = createCommunityAgent(type2, 0, quantity3);
 		agentArray.add(c);
 
 		cuenta++;
@@ -277,7 +229,7 @@ public class ExperimentConfigurationCreator {
 	private void crearExperimento(String poblacion) {
 		int numCommunityAgents = quantity;
 
-		for(int i = 0 ; i < violationRates ; i++){
+		for(int i = 0 ; i < 3 ; i++){
 			switch(i){
 			case 0:
 				CrearXMLDelExperimento(poblacion, contentsPerCommunityAgent, numCommunityAgents, stopTick, 0.3f);
@@ -404,35 +356,35 @@ public class ExperimentConfigurationCreator {
 		UploadProfile up = null;
 		ViewProfile vp = null;
 		ComplaintProfile cp = null;
-				
+
 		switch(type){
 		case moderate:
-			up = new UploadProfile(uploadProb, 1, 0, 0, 0, 0);
-			vp = new ViewProfile(0.34,0.33,0.33,2);
+			up = new UploadProfile(1, 1, 0, 0, 0, 0);
+			vp = new ViewProfile(0.4,0.4,0.2,2);
 			cp = new ComplaintProfile(complaintPer, complaintPer, complaintPer, complaintPer);
 			name = "moderate";
 			break;
 		case spammer:
-			up = new UploadProfile(uploadProb, 0, 1, 0, 0, 0);
-			vp = new ViewProfile(0.34,0.33,0.33,2);
+			up = new UploadProfile(1, 0, 1, 0, 0, 0);
+			vp = new ViewProfile(0.4,0.4,0.2,2);
 			cp = new ComplaintProfile(complaintPer, complaintPer, complaintPer, complaintPer);
 			name = "spammer";
 			break;
 		case porno:
-			up = new UploadProfile(uploadProb, 0, 0, 1, 0, 0);
-			vp = new ViewProfile(0.34,0.33,0.33,2);
+			up = new UploadProfile(1, 0, 0, 1, 0, 0);
+			vp = new ViewProfile(0.4,0.4,0.2,2);
 			cp = new ComplaintProfile(0,0,0,0);		
 			name = "pornographic";
 			break;
 		case violent:
-			up = new UploadProfile(uploadProb, 0, 0, 0, 1, 0);
-			vp = new ViewProfile(0.34,0.33,0.33,2);
+			up = new UploadProfile(1, 0, 0, 0, 1, 0);
+			vp = new ViewProfile(0.4,0.4,0.2,2);
 			cp = new ComplaintProfile(0,0,0,0);
 			name = "violent";
 			break;
 		case rude:
-			up = new UploadProfile(uploadProb, 0, 0, 0, 0, 1);
-			vp = new ViewProfile(0.34,0.33,0.33,2);
+			up = new UploadProfile(1, 0, 0, 0, 0, 1);
+			vp = new ViewProfile(0.4,0.4,0.2,2);
 			cp = new ComplaintProfile(0,0,0,0);
 			name = "rude";
 			break;
@@ -548,7 +500,7 @@ public class ExperimentConfigurationCreator {
 
 		upPers = uploadProfilePercentages(contentType1, contentType2, agent2Content1Percentage, agent2Content2Percentage);
 
-		up = new UploadProfile(uploadProb, upPers.get(0), upPers.get(1), upPers.get(2), upPers.get(3), upPers.get(4));
+		up = new UploadProfile(1, upPers.get(0), upPers.get(1), upPers.get(2), upPers.get(3), upPers.get(4));
 		vp = new ViewProfile(0.4,0.4,0.2,2);
 		cp = new ComplaintProfile(0, 0, 0, 0);
 		name = "another";

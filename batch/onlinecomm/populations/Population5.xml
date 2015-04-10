@@ -8,7 +8,7 @@
         <spam>0.0</spam>
         <violent>0.0</violent>
         <porn>0.0</porn>
-        <uploadProbability>0.2</uploadProbability>
+        <uploadProbability>1.0</uploadProbability>
         <secForum>0.4</secForum>
         <secTheReporter>0.4</secTheReporter>
         <secPhotoVideo>0.2</secPhotoVideo>
@@ -28,7 +28,7 @@
         <spam>1.0</spam>
         <violent>0.0</violent>
         <porn>0.0</porn>
-        <uploadProbability>0.2</uploadProbability>
+        <uploadProbability>1.0</uploadProbability>
         <secForum>0.4</secForum>
         <secTheReporter>0.4</secTheReporter>
         <secPhotoVideo>0.2</secPhotoVideo>

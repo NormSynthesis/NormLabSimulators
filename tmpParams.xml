@@ -1,0 +1,29 @@
+<?xml version='1.0'?>
+<sweep runs='1'>
+  <parameter name='SimMap'                   	value='1'				type='constant' constant_type='number' />
+  <parameter name='SimNewCarsFreq'           	value='1'			type='constant' constant_type='number' />
+  <parameter name='SimNumCarsToEnter'         	value='4'		type='constant' constant_type='number' />
+  <parameter name='SimRandomSeed'            	value='200l'			type='constant' constant_type='number' />
+  <parameter name='SimMaxTicks'              	value='35000l'			type='constant' constant_type='number' />
+  <parameter name='SimGUI'                   	value='false'				type='constant' constant_type='boolean' />
+  <parameter name='SimUseSemaphores'         	value='false'		type='constant' constant_type='boolean' />
+  <parameter name='SimOnlySemaphores'        	value='false'		type='constant' constant_type='boolean' />
+  <parameter name='SimNormViolationRate'     	value='0.3'		type='constant' constant_type='number' />
+  <parameter name='NormsGenEffThreshold'		value='0.0'		type='constant' constant_type='number' />
+  <parameter name='NormsGenNecThreshold'          value='0.0'		type='constant' constant_type='number' />
+  <parameter name='NormsSpecEffThreshold'       	value='0.026'		type='constant' constant_type='number' />
+  <parameter name='NormsSpecNecThreshold'        	value='0.026'		type='constant' constant_type='number' />
+  <parameter name='NormsPerfRangeSize'        	value='150'		type='constant' constant_type='number' />
+  <parameter name='NormsDefaultUtility'        	value='0.5'		type='constant' constant_type='number' />
+  <parameter name='NumTicksToConverge'     	value='5000l'		type='constant' constant_type='number' />
+  <parameter name='NormsWeightCol'      		value='4'			type='constant' constant_type='number' />
+  <parameter name='NormsWeightNoCol'             	value='1'		type='constant' constant_type='number' />
+  <parameter name='NormsWeightFluidTraffic'     	value='2'	type='constant' constant_type='number' />
+  <parameter name='NumExec'		     	value='200'			type='constant' constant_type='number' />
+  <parameter name='NormsSpecThresholdEpsilon'    	value='0.025'				type='constant' constant_type='number' />
+  <parameter name='NormsMinEvaluations'	     	value='25'				type='constant' constant_type='number' />
+  <parameter name='NormSynthesisExample'	     	value='0'				type='constant' constant_type='number' />
+  <parameter name='NormSynthesisStrategy'		value='3'				type='constant' constant_type='number' />
+  <parameter name='NormGeneralisationMode'     	value='1'				type='constant' constant_type='number' />
+  <parameter name='NormGeneralisationStep'    	value='1'				type='constant' constant_type='number' />
+</sweep>

@@ -2,7 +2,6 @@ package es.csic.iiia.normlab.onlinecomm.agents.profile;
 
 import java.util.ArrayList;
 
-import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.space.grid.Grid;
 import es.csic.iiia.normlab.onlinecomm.bbdd.BbddManager;
 import es.csic.iiia.normlab.onlinecomm.content.IContent;
@@ -151,32 +150,26 @@ public class UploadProfile {
 	private void createContent(ArrayList<Integer> randomSectionList, int contentLength, int format, int contentType) {
 		IContent comment = null;
 
-		double tick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
-		
+
 		for (int i = 0; i < contentLength && !randomSectionList.isEmpty(); i++) {
 			switch(format){
 
 			case 0:
 				switch(contentType){
 				case idCorrect:
-					comment = new CorrectComment(1, contentType, "file", "url",
-							"message", randomSectionList.remove(0), "correct", tick);
+					comment = new CorrectComment(1, contentType, "file", "url", "message", randomSectionList.remove(0), "correct");
 					break;
 				case idSpam:
-					comment = new SpamComment(2, contentType, "file", "url",
-							"message", randomSectionList.remove(0), "spam", tick);
+					comment = new SpamComment(2, contentType, "file", "url", "message", randomSectionList.remove(0), "spam");
 					break;
 				case idPorn:
-					comment = new PornComment(3, contentType, "file", "url",
-							"message", randomSectionList.remove(0), "porn", tick);
+					comment = new PornComment(3, contentType, "file", "url", "message", randomSectionList.remove(0), "porn");
 					break;
 				case idViolent:
-					comment = new ViolentComment(4, contentType, "file", "url",
-							"message", randomSectionList.remove(0), "violent", tick);
+					comment = new ViolentComment(4, contentType, "file", "url", "message", randomSectionList.remove(0), "violent");
 					break;		
 				case idInsult:
-					comment = new InsultComment(6, contentType, "file", "url",
-							"message", randomSectionList.remove(0), "insult", tick);
+					comment = new InsultComment(6, contentType, "file", "url", "message", randomSectionList.remove(0), "insult");
 					break;	
 				}
 				break;
