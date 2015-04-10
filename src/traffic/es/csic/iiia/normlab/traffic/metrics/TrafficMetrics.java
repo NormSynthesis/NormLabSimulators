@@ -11,7 +11,7 @@ import java.util.List;
 import repast.simphony.annotate.AgentAnnot;
 import repast.simphony.engine.environment.RunEnvironment;
 import es.csic.iiia.nsm.NormSynthesisMachine;
-import es.csic.iiia.nsm.agent.AgentAction;
+import es.csic.iiia.nsm.agent.EnvironmentAgentAction;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
 import es.csic.iiia.nsm.config.Dimension;
 import es.csic.iiia.nsm.config.Goal;
@@ -58,9 +58,7 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
 	 * @param mainClass
 	 */
 	public TrafficMetrics(NormSynthesisMachine nsm) {
-		super(nsm.getNormSynthesisSettings(), nsm.getNormativeNetwork(),
-				nsm.getStrategy(), nsm.getPredicatesDomains(), 
-				nsm.getDomainFunctions());
+		super(nsm);
 
 		this.nsm = nsm;
 		this.nsmSettings = nsm.getNormSynthesisSettings();
@@ -72,8 +70,6 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
 		this.NSMinimalityAtIRONConvergenceTick = 0;
 		this.NSSimplicityAtIRONConvergenceTick = 0;		
 		
-		this.getIRONConvergenceTick();
-
 		// Creamos dataset para los resultados de la simulacion
 		this.simOutput = new StringBuffer();
 		this.simOutput.append("\"tick\";\"NormativeNetworkCardinality\";\"NormativeSystemMinimality"
@@ -83,8 +79,8 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
 	/**
 	 * Computes the metrics for the simulator
 	 */
-	public void update() {
-		super.update();
+	public void update(long timeStep) {
+		super.update(timeStep);
 
 		this.tick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
 
@@ -97,8 +93,8 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
 
 			Goal goal = nsmSettings.getSystemGoals().get(0);
 			for(Norm norm : NS) {
-				float eff = this.getNormUtility(norm).getScoreAverage(Dimension.Effectiveness, goal);
-				float nec = this.getNormUtility(norm).getScoreAverage(Dimension.Necessity, goal);
+				float eff = (float)this.getNormUtility(norm).getScoreAverage(Dimension.Effectiveness, goal);
+				float nec = (float)this.getNormUtility(norm).getScoreAverage(Dimension.Necessity, goal);
 				NSeff += eff;
 				NSnec += nec;
 			}
@@ -148,8 +144,8 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
 		Goal goal = nsmSettings.getSystemGoals().get(0);
 		for(Norm norm : NS)
 		{
-			float eff = this.getNormUtility(norm).getScoreAverage(Dimension.Effectiveness, goal);
-			float nec = this.getNormUtility(norm).getScoreAverage(Dimension.Necessity, goal);
+			float eff = (float)this.getNormUtility(norm).getScoreAverage(Dimension.Effectiveness, goal);
+			float nec = (float)this.getNormUtility(norm).getScoreAverage(Dimension.Necessity, goal);
 			NSeff += eff;
 			NSnec += nec;
 		}
@@ -219,6 +215,27 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
 			e.printStackTrace();
 		}
 		
+		outputFile = new File("output/traffic/ComputationMetrics.dat");
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile, true));
+			
+			double minCompTime = this.getMinComputationTime();
+			double maxCompTime = this.getMaxComputationTime();
+			double medianCompTime = this.getMedianComputationTime();
+			double totalCompTime = this.getTotalComputationTime();
+			double nodesSynth = this.getNumNodesSynthesised();
+			double nodesInMem = this.getNumNodesInMemory();
+			double nodesVisited = this.getNumNodesVisited();
+			
+			bw.write(String.valueOf(minCompTime) + "\t" + String.valueOf(maxCompTime) + "\t" +
+					String.valueOf(medianCompTime) + "\t" + String.valueOf(totalCompTime) + "\t" + 
+					String.valueOf(nodesSynth) + "\t" +	String.valueOf(nodesInMem) + "\t" + 
+					String.valueOf(nodesVisited) + "\t" +"\n");
+			bw.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}		
 //		/* Sacamos patrones de cada norma al final */
 //		File perfRangesFile = new File("output/traffic/NormPerfRanges.dat");
 //
@@ -266,8 +283,7 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
 	 * @param NS
 	 * @return
 	 */
-	private int computeNumClauses(List<Norm> norms)
-	{
+	private int computeNumClauses(List<Norm> norms) {
 		int ret = 0;
 		for(Norm norm : norms)
 		{
@@ -276,29 +292,6 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
 					ret++;
 		}		
 		return ret;
-	}
-
-	/**
-	 * 
-	 */
-	private void getIRONConvergenceTick()
-	{
-		//		File IRONConvergenceTicksFile = new File("IRONConvergenceTicks");
-		//		
-		//		try {
-		//	    BufferedReader reader = new BufferedReader(new FileReader(IRONConvergenceTicksFile));
-		//	    
-		//	    int i=0;
-		//	    do{
-		//	    	IRONConvergenceTick = Integer.parseInt(reader.readLine());
-		//	    	i++;
-		//	    }while(i != TrafficNormSynthesisSettings.NUM_EXEC);
-		//	    
-		//	    	reader.close();
-		//    } 
-		//		catch (IOException e) {
-		//	    e.printStackTrace();
-		//    }
 	}
 
 	//-----------------------------------------------------------------
@@ -529,7 +522,7 @@ public class TrafficMetrics extends DefaultNormSynthesisMetrics {
    */
   private void computeRepresentedNorms(List<Norm> representedNorms, Norm norm) {
   	NormModality mod = norm.getModality();
-		AgentAction action = norm.getAction();
+		EnvironmentAgentAction action = norm.getAction();
 		List<SetOfPredicatesWithTerms> chPreconds = this.genReasoner.
 				getChildContexts(norm.getPrecondition());
 		

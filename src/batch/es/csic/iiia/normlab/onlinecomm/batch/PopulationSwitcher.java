@@ -19,9 +19,16 @@ public class PopulationSwitcher {
 	 */
 	public static void main(String[] args) {
 		String populationURL = args[0];
+		String destiny = null;
+
+		if (args.length <= 1){
+			destiny = "files/onlinecomm/populations/population.xml";
+		}else{
+			destiny = args[1];
+		}
 		
 		File origen = new File(populationURL);
-		File destino = new File("files/onlinecomm/populations/population.xml");
+		File destino = new File(destiny);
 				
 		InputStream in;
 		OutputStream out;

@@ -4,13 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.csic.iiia.normlab.traffic.agent.TrafficNormSynthesisAgent;
-import es.csic.iiia.normlab.traffic.agent.monitor.TrafficCamera;
-import es.csic.iiia.normlab.traffic.normsynthesis.TrafficNormSynthesisSettings;
+import es.csic.iiia.normlab.traffic.car.CarAction;
+import es.csic.iiia.normlab.traffic.metrics.TrafficMetrics;
 import es.csic.iiia.nsm.IncorrectSetupException;
 import es.csic.iiia.nsm.NormSynthesisMachine;
+import es.csic.iiia.nsm.agent.language.PredicatesDomains;
+import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
+import es.csic.iiia.nsm.config.DomainFunctions;
 import es.csic.iiia.nsm.config.NormSynthesisSettings;
 import es.csic.iiia.nsm.metrics.NormSynthesisMetrics;
+import es.csic.iiia.nsm.net.norm.NetworkNodeState;
+import es.csic.iiia.nsm.net.norm.NormativeNetwork;
 import es.csic.iiia.nsm.norm.Norm;
+import es.csic.iiia.nsm.norm.NormModality;
 import es.csic.iiia.nsm.norm.NormativeSystem;
 
 /**
@@ -25,7 +31,6 @@ public class TrafficNSExample2_NSAgent implements TrafficNormSynthesisAgent {
 	//---------------------------------------------------------------------------
 
 	private NormSynthesisMachine nsm;
-	private NormSynthesisSettings nsmSettings;
 	private NormativeSystem normativeSystem;
 	private List<Norm> addedNorms;
 	private List<Norm> removedNorms;
@@ -37,24 +42,35 @@ public class TrafficNSExample2_NSAgent implements TrafficNormSynthesisAgent {
 	/**
 	 * Constructor of the example
 	 */
-	public TrafficNSExample2_NSAgent(List<TrafficCamera> cameras) {
+	public TrafficNSExample2_NSAgent(NormSynthesisSettings nsSettings, 
+			PredicatesDomains predDomains, DomainFunctions dmFunctions) {
 		
+		/* Create the normative system, which will contain the norms 
+		 * available to the agents */
 		this.normativeSystem = new NormativeSystem();
 		
-		/* Create lists to control additions and
-		 * removals of the normative system */
+		/* Create lists to control norm additions and norm removals
+		 * from the normative system */
 		this.addedNorms = new ArrayList<Norm>();
 		this.removedNorms = new ArrayList<Norm>();
+				
+		/* Create the norm synthesis machine */
+		this.nsm = new NormSynthesisMachine(nsSettings, predDomains,
+				dmFunctions, true, 0l);
 		
-		/* Create norm synthesis settings */
-		this.nsmSettings = new TrafficNormSynthesisSettings();
+		/* Create traffic metrics */
+		TrafficMetrics nsMetrics = new TrafficMetrics(nsm);
 		
-		/* Create norm synthesis machine */
-		this.nsm = new NormSynthesisMachine(nsmSettings, null, null, true);
+		/* Create the norm synthesis strategy */
+		TrafficNSExample2_NSStrategy strategy =	
+				new TrafficNSExample2_NSStrategy(this.nsm);
 		
-		/* Set the norm synthesis strategy */
-		TrafficNSExample2_NSStrategy strategy =	new TrafficNSExample2_NSStrategy(this.nsm);
-		this.nsm.useStrategy(strategy);
+		/* Setup the norm synthesis machine */
+		this.nsm.setup(strategy, nsMetrics, null, null);
+		
+		/* Create default normative system */
+		this.createDefaultNormativeSystem();
+		
 	}
 
 	/**
@@ -62,12 +78,12 @@ public class TrafficNSExample2_NSAgent implements TrafficNormSynthesisAgent {
 	 * 
 	 * @throws IncorrectSetupException 
 	 */
-	public void step() throws IncorrectSetupException {
+	public void step(long timeStep) throws IncorrectSetupException {
 		this.addedNorms.clear();
 		this.removedNorms.clear();
 
 		/* Execute strategy and obtain new normative system */
-		NormativeSystem newNormativeSystem = nsm.executeStrategy();
+		NormativeSystem newNormativeSystem = nsm.executeStrategy(timeStep);
 
 		/* Check norm additions to the normative system */ 
 		for(Norm norm : newNormativeSystem) {
@@ -116,5 +132,27 @@ public class TrafficNSExample2_NSAgent implements TrafficNormSynthesisAgent {
 	 */
 	public NormSynthesisMachine getNormSynthesisMachine() {
 		return this.nsm;
+	}
+	
+	/**
+	 * Creates a normative system with a few core norms that are 
+	 * highly effective and necessary
+	 */
+	private void createDefaultNormativeSystem() {
+		NormativeNetwork normativeNetwork = this.nsm.getNormativeNetwork();
+		
+		/* Create norms */
+		SetOfPredicatesWithTerms n1Precondition = new SetOfPredicatesWithTerms();
+		n1Precondition.add("l", ">");
+		n1Precondition.add("f", "*");
+		n1Precondition.add("r", "*");
+		
+		/* Create norm */
+		Norm n1 = new Norm(n1Precondition, 
+				NormModality.Prohibition, CarAction.Go);
+		
+		/* Add the norm to the normative network and activate it */
+		normativeNetwork.add(n1);
+		normativeNetwork.setState(n1, NetworkNodeState.ACTIVE);
 	}
 }

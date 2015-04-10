@@ -106,6 +106,9 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 	/* Traffic norm synthesis strategy */
 	public static int NORM_SYNTHESIS_STRATEGY;
 
+	/* Is norm generation highly reactive to conflicts? */
+	public static boolean NORM_GENERATION_REACTIVE;
+
 	/* Traffic norm generalisation mode */
 	public static int NORM_GENERALISATION_MODE;
 
@@ -144,14 +147,27 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 
 	/* */
 	public static double NORM_SPEC_THRESHOLD_EPSILON;
-	
+
 	/* */
-	public static int NORM_MIN_EVALS;
-	
+	public static int NORMS_MIN_EVALS_ACTIVATE;
+
+	/* */
+	public static int NORMS_MIN_EVALS_CLASSIFY;
+
+	/* */
+	public static int NORM_GROUPS_MIN_EVALS_CLASSIFY;
+
 	//-----------------------------------------------------------------
 	// Methods
 	//-----------------------------------------------------------------
 
+	/**
+	 * 
+	 */
+	public TrafficNormSynthesisSettings() {
+		init();	
+	}
+	
 	/**
 	 * Initialises the configuration
 	 */
@@ -179,13 +195,13 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 
 		NORM_SYNTHESIS_EXAMPLE = (Integer)p.getValue("NormSynthesisExample");
 		NORM_SYNTHESIS_STRATEGY = (Integer)p.getValue("NormSynthesisStrategy");
+		NORM_GENERATION_REACTIVE = (Boolean)p.getValue("NormGenerationReactive");
 		NORM_GENERALISATION_MODE = (Integer)p.getValue("NormGeneralisationMode");
 		NORM_GENERALISATION_STEP = (Integer)p.getValue("NormGeneralisationStep");
 		NORM_SPEC_THRESHOLD_EPSILON = (Double)p.getValue("NormsSpecThresholdEpsilon");
-		NORM_MIN_EVALS = (Integer)p.getValue("NormsMinEvaluations");
-		
-		checkNSExamples();
-		
+		NORMS_MIN_EVALS_CLASSIFY = (Integer)p.getValue("NormsMinEvaluationsToClassify");
+		NORM_GROUPS_MIN_EVALS_CLASSIFY = (Integer)p.getValue("NormGroupsMinEvaluationsToClassify");
+
 		// System goals and their constants
 		Goal gCols = new Gcols();
 		systemGoals = new ArrayList<Goal>();
@@ -200,18 +216,20 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 
 		GOAL_EVALUATION_CONSTANTS = new HashMap<Goal, NormEvaluationConstants>();
 		GOAL_EVALUATION_CONSTANTS.put(gCols, gColsConstants);
-		
-		double tMinusEpsilon = NORM_SPEC_NEC_THRESHOLD - NORM_SPEC_THRESHOLD_EPSILON;
-		NORM_DEFAULT_UTILITY = (float)(tMinusEpsilon * (NORM_MIN_EVALS+1));
+
+		/* For SIMON+ and LION, set default utility in a different manner... */
+		if((NORM_SYNTHESIS_STRATEGY == 3 || NORM_SYNTHESIS_STRATEGY == 4)) {
+
+			if(NORM_GENERATION_REACTIVE) {
+				double tMinusEpsilon = NORM_SPEC_NEC_THRESHOLD - NORM_SPEC_THRESHOLD_EPSILON;
+				NORM_DEFAULT_UTILITY = (float)(tMinusEpsilon * (NORMS_MIN_EVALS_CLASSIFY + 1));
+			}
+			else {
+				NORM_DEFAULT_UTILITY = 0f;
+			}
+		}
 	}
 
-	/**
-	 * 
-	 */
-	private static void checkNSExamples() {
-
-	  
-  }
 
 	/**
 	 * 
@@ -235,6 +253,14 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 	@Override
 	public List<Goal> getSystemGoals() {
 		return systemGoals;
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public boolean isNormGenerationReactiveToConflicts() {
+		return NORM_GENERATION_REACTIVE;
 	}
 
 	/**
@@ -288,7 +314,6 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 	 */
 	@Override
 	public float getSpecialisationBoundary(Dimension dim, Goal goal) {
-
 		if(dim == Dimension.Effectiveness) {
 			return (float)TrafficNormSynthesisSettings.NORM_SPEC_EFF_THRESHOLD;
 		}
@@ -304,7 +329,7 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 	public float getSpecialisationBoundaryEpsilon(Dimension dim, Goal goal) {
 		return (float)NORM_SPEC_THRESHOLD_EPSILON;
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -313,7 +338,7 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 		if(NORM_SYNTHESIS_EXAMPLE > 0 && NORM_SYNTHESIS_EXAMPLE < 5) {
 			return NormGeneralisationMode.None;
 		}
-		
+
 		switch(NORM_GENERALISATION_MODE) {
 		case 0:
 			return NormGeneralisationMode.Shallow;
@@ -337,31 +362,46 @@ public class TrafficNormSynthesisSettings implements NormSynthesisSettings {
 	 * 
 	 */
 	@Override
+	public int getMinEvaluationsToClassifyNorms() {
+		return NORMS_MIN_EVALS_CLASSIFY;
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public int getMinEvaluationsToClassifyNormGroups() {
+		return NORM_GROUPS_MIN_EVALS_CLASSIFY;
+	}
+
+	/**
+	 * 
+	 */
+	@Override
 	public String getNormSynthesisStrategy() {
-		
-	  switch(NORM_SYNTHESIS_EXAMPLE) {
-	  case 1:
-	  	return "Example 1";
-	  case 2:
-	  	return "Example 2";
-	  case 3: 
-	  	return "Example 3";
-	  case 4: 
-	  	return "Example 4";
-	  case 5: 
-	  	return "Example 5";
-	  }
-		
+
+		switch(NORM_SYNTHESIS_EXAMPLE) {
+		case 1:
+			return "Example 1";
+		case 2:
+			return "Example 2";
+		case 3: 
+			return "Example 3";
+		case 4: 
+			return "Example 4";
+		case 5: 
+			return "Example 5";
+		}
+
 		switch(NORM_SYNTHESIS_STRATEGY) {
 		case 1:
 			return "IRON";
-
 		case 2:
 			return "SIMON";
-
 		case 3:
-			return "XSIMON";
-
+			return "DON-SIMON";
+		case 4:
+			return "LION";
 		default:
 			return "Custom";
 		}

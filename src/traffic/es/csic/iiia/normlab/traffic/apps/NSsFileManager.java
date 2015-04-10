@@ -12,7 +12,7 @@ import es.csic.iiia.normlab.traffic.car.CarAction;
 import es.csic.iiia.normlab.traffic.factory.CarContextFactory;
 import es.csic.iiia.normlab.traffic.normsynthesis.TrafficDomainFunctions;
 import es.csic.iiia.normlab.traffic.utils.StringList;
-import es.csic.iiia.nsm.agent.AgentAction;
+import es.csic.iiia.nsm.agent.EnvironmentAgentAction;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
 import es.csic.iiia.nsm.config.DomainFunctions;
@@ -234,7 +234,7 @@ public class NSsFileManager {
    */
   private void computeRepresentedNorms(List<Norm> representedNorms, Norm norm) {
   	NormModality mod = norm.getModality();
-		AgentAction action = norm.getAction();
+		EnvironmentAgentAction action = norm.getAction();
 		List<SetOfPredicatesWithTerms> chPreconds = this.genReasoner.
 				getChildContexts(norm.getPrecondition());
 		

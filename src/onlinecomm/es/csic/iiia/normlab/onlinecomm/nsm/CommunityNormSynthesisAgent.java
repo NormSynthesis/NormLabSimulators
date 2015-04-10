@@ -8,12 +8,12 @@ import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.util.ContextUtils;
 import es.csic.iiia.normlab.onlinecomm.agents.CommunityAgent;
+import es.csic.iiia.normlab.onlinecomm.agents.norms.CommunityAgentReasoner;
 import es.csic.iiia.normlab.onlinecomm.agents.norms.CommunityFactFactory;
 import es.csic.iiia.normlab.onlinecomm.agents.norms.CommunityNormEngine;
 import es.csic.iiia.normlab.onlinecomm.context.ContextData;
 import es.csic.iiia.normlab.onlinecomm.metrics.CommunityMetricsManager;
 import es.csic.iiia.normlab.onlinecomm.nsm.agent.CommunityAgentAction;
-import es.csic.iiia.normlab.onlinecomm.nsm.perception.CommunityWatcher;
 import es.csic.iiia.nsm.IncorrectSetupException;
 import es.csic.iiia.nsm.NormSynthesisMachine;
 import es.csic.iiia.nsm.NormSynthesisMachine.NormGeneralisationMode;
@@ -25,6 +25,8 @@ import es.csic.iiia.nsm.config.NormSynthesisSettings;
 import es.csic.iiia.nsm.norm.Norm;
 import es.csic.iiia.nsm.norm.NormModality;
 import es.csic.iiia.nsm.norm.NormativeSystem;
+import es.csic.iiia.nsm.perception.Sensor;
+import es.csic.iiia.nsm.strategy.NormSynthesisStrategy;
 
 /**
  * 
@@ -38,7 +40,8 @@ public class CommunityNormSynthesisAgent {
 	// ---------------------------------------------------------------------------
 
 	private static CommunityFactFactory factFactory;
-	private static CommunityNormEngine normEngine;
+	private static CommunityNormEngine nsNormEngine;
+	private static CommunityAgentReasoner agentsReasoner;
 
 	// ---------------------------------------------------------------------------
 	// Attributes
@@ -64,41 +67,37 @@ public class CommunityNormSynthesisAgent {
 	/**
 	 * 
 	 */
-	public CommunityNormSynthesisAgent(CommunityWatcher watcher,
-	    ContextData context) {
+	public CommunityNormSynthesisAgent(Sensor watcher,
+	    ContextData context, long randomSeed, boolean withGui) {
 
 		this.contextData = context;
-		
-		boolean isGui = !RunEnvironment.getInstance().isBatch();
-
 		this.normativeSystem = new NormativeSystem();
 		this.addedNorms = new ArrayList<Norm>();
 		this.removedNorms = new ArrayList<Norm>();
 		this.nsmSettings = new CommunityNormSynthesisSettings();
-		this.dmFunctions = new CommunityDomainFunctions();
-
+		
 		/* Create predicates domains */
 		this.predDomains = this.createPredicatesDomains();
+
+		/* Create class to generate facts that describe the on-line community
+		 * scenario */
+		factFactory = new CommunityFactFactory(predDomains);
+		
+		/* Create online community domain functions */
+		this.dmFunctions = new CommunityDomainFunctions(factFactory);
 		
 		/* Create norm engine to reason about norms */
-		normEngine = new CommunityNormEngine(this.dmFunctions, predDomains);
-
-		/*
-		 * Create class to generate facts that describe the on-line community
-		 * scenario
-		 */
-		factFactory = new CommunityFactFactory(predDomains);
+		nsNormEngine = new CommunityNormEngine(this.dmFunctions, predDomains);
 
 		/* Create norm synthesis machine */
 		this.nsm = new NormSynthesisMachine(nsmSettings, predDomains, dmFunctions,
-		    isGui);
-
-		/* Setup norm synthesis machine (utility function, omega function */
-		this.nsm.useDefaultOmegaFunction();
+		    withGui, randomSeed);
 
 		/* Add sensors to the monitor of the norm synthesis machine */
 		this.nsm.addSensor(watcher);
 
+		agentsReasoner = new CommunityAgentReasoner(predDomains,contextData);
+		
 		/* Finally, set norm synthesis strategy (SIMON in this case) */
 
 //		/* Generate pool of norms */
@@ -120,11 +119,8 @@ public class CommunityNormSynthesisAgent {
 		/* 3. Set the norm synthesis strategy */
 		this.setNormSynthesisStrategy();
 		
-		/* 4. Set metrics */
-		this.setMetrics();
-		
 		/* CBR frame */
-		if (isGui) {
+		if (withGui) {
 			// CBRFrame cbrFrame = new CBRFrame(nsm);
 			// cbrFrame.setVisible(true);
 		}
@@ -135,39 +131,60 @@ public class CommunityNormSynthesisAgent {
 	 * 
 	 */
 	public void step() throws IncorrectSetupException {
+		double startTime, finishTime, compTime;
+		NormativeSystem newNormativeSystem;
+		
 		this.addedNorms.clear();
 		this.removedNorms.clear();
-
+		
+		double tick = RunEnvironment.getInstance().
+				getCurrentSchedule().getTickCount();
+		
 		if (this.agents == null) {
 			this.agents = this.getAgents();
 		}
 
+		/* Save time just before executing the strategy */
+		startTime = System.nanoTime();
+		
 		/* Execute strategy and obtain new normative system */
-		NormativeSystem newNormativeSystem = nsm.executeStrategy();
-
-		/* Check norm additions to the normative system */
-		for (Norm norm : newNormativeSystem) {
-			if (!normativeSystem.contains(norm)) {
+		newNormativeSystem = nsm.executeStrategy(tick);
+		
+		/* Compute elapsed time during the strategy execution */
+		finishTime = System.nanoTime();
+		compTime = (finishTime - startTime) / 1000000;
+		
+		this.metricsManager.addNewComputationTime(compTime);
+		
+		
+		
+		
+		/* Check norm additions to the normative system */ 
+		for(Norm norm : newNormativeSystem) {
+			if(!normativeSystem.contains(norm)) {
 				this.normativeSystem.add(norm);
 				this.addedNorms.add(norm);
-				normEngine.addNorm(norm);
-				//
-				// this.applicabilityFunction.addNorm(norm);
+				
+				nsNormEngine.addNorm(norm);
+				agentsReasoner.addNorm(norm);
 			}
 		}
 
 		// Check norm removals
-		for (Norm norm : normativeSystem) {
-			if (!newNormativeSystem.contains(norm)) {
+		for(Norm norm : normativeSystem) {
+			if(!newNormativeSystem.contains(norm)) {
 				this.removedNorms.add(norm);
 			}
-		}
+		}	
 
 		// Remove norms from normative systems
-		for (Norm norm : removedNorms) {
+		for(Norm norm : removedNorms) {
 			this.normativeSystem.remove(norm);
-			// this.applicabilityFunction.removeNorm(norm); // TODO: We want to
-			// evaluate ALL norms
+			agentsReasoner.removeNorm(norm);
+		}
+		
+		if(tick == 5000) {
+			System.out.println(this.normativeSystem);
 		}
 	}
 
@@ -194,43 +211,23 @@ public class CommunityNormSynthesisAgent {
 	 * Sets the norm synthesis strategy
 	 */
 	protected void setNormSynthesisStrategy() {
-		NormGeneralisationMode nGenMode = nsmSettings.getNormGeneralisationMode();
-		int nGenStep = nsmSettings.getNormGeneralisationStep();
+		NormGeneralisationMode genMode = nsmSettings.getNormGeneralisationMode();
+		int genStep = nsmSettings.getNormGeneralisationStep();
+
+		NormSynthesisStrategy.Option option = null;
 
 		/* Finally, set norm synthesis strategy */
 		switch(CommunityNormSynthesisSettings.NORM_SYNTHESIS_STRATEGY) {
 
-		case 0:
-			this.setCustomNormSynthesisStrategy();
-			break;
-
-			/* IRON strategy */ 
-		case 1:
-			this.nsm.useIRONNormSynthesisStrategy();
-			break;
-
-			/* SIMON strategy */
-		case 2:
-			this.nsm.useSIMONNormSynthesisStrategy(nGenMode, nGenStep);
-			break;
-
-			/* SIMON+ strategy */
-		case 3:
-			this.nsm.useSIMONPlusNormSynthesisStrategy(nGenMode, nGenStep);
-			break;
-			
-		case 4:
-			this.nsm.useLIONNormSynthesisStrategy(nGenMode, nGenStep);
-			break;
+		case 0:			this.setCustomNormSynthesisStrategy();						break;
+		case 1:			option = NormSynthesisStrategy.Option.IRON;				break;
+		case 2:			option = NormSynthesisStrategy.Option.SIMON;			break;
+		case 3:			option = NormSynthesisStrategy.Option.SIMONPlus;	break;
+		case 4:			option = NormSynthesisStrategy.Option.LION;				break;
 		}
-	}
 
-	/**
-	 * 
-	 */
-	private void setMetrics() {
 		this.metricsManager = new CommunityMetricsManager(contextData, nsm);
-		this.nsm.useNormSynthesisMetrics(metricsManager);
+		this.nsm.setup(option, genMode, genStep, metricsManager, null, null);
 	}
 	
 	/**
@@ -244,25 +241,8 @@ public class CommunityNormSynthesisAgent {
 	 * Creates the predicate and their domains for the traffic scenario
 	 */
 	private PredicatesDomains createPredicatesDomains() {
-		PredicatesDomains predicatesDomains;
+		PredicatesDomains predicatesDomains = new PredicatesDomains();
 		
-		/* Predicate "usr" domain */
-//		TaxonomyOfNaturalNumbers usrPredTaxonomy = new TaxonomyOfNaturalNumbers("usr");
-//		TaxonomyOfNaturalNumbers secPredTaxonomy = new TaxonomyOfNaturalNumbers("sec");
-		
-		/* Predicate "user" domain*/
-		TaxonomyOfTerms usrPredTaxonomy = new TaxonomyOfTerms("usr");
-
-		usrPredTaxonomy.addTerm("*");
-		
-		//TODO los predicados no se ponen con el numero de agentes porque se calculan mas tarde.
-		
-		//for (int i = 0 ; i <= contextData.getMaxAgents() ; i++){
-		for (int i = 0 ; i <= 1000 ; i++){
-			usrPredTaxonomy.addTerm(""+i);
-			usrPredTaxonomy.addRelationship(""+i, "*");
-		}
-
 		/* Predicate "section" domain*/
 		TaxonomyOfTerms secPredTaxonomy = new TaxonomyOfTerms("sec");
 		secPredTaxonomy.addTerm("*");
@@ -288,10 +268,20 @@ public class CommunityNormSynthesisAgent {
 		cntTypePredTaxonomy.addRelationship("violent", "*");
 		cntTypePredTaxonomy.addRelationship("insult", "*");
 		
-		predicatesDomains = new PredicatesDomains();
+		/* Predicate "user" domain*/		
 		if(CommunityNormSynthesisSettings.NORMS_WITH_USER_ID) {
-			predicatesDomains.addPredicateDomain("usr", usrPredTaxonomy);	
+			TaxonomyOfTerms usrPredTaxonomy = new TaxonomyOfTerms("usr");
+			usrPredTaxonomy.addTerm("*");
+		
+			/* Add users */
+			int numAgents = CommunityNormSynthesisSettings.SIM_NUM_AGENTS;
+			for (int numAgent = 0 ; numAgent <= numAgents; numAgent++){
+				usrPredTaxonomy.addTerm("" + numAgent);
+				usrPredTaxonomy.addRelationship("" + numAgent, "*");
+			}
+			predicatesDomains.addPredicateDomain("usr", usrPredTaxonomy);
 		}
+		
 		predicatesDomains.addPredicateDomain("sec", secPredTaxonomy);
 		predicatesDomains.addPredicateDomain("cnt", cntTypePredTaxonomy);
 		
@@ -389,9 +379,17 @@ public class CommunityNormSynthesisAgent {
 	 * @return
 	 */
 	public static CommunityNormEngine getNormEngine() {
-		return normEngine;
+		return nsNormEngine;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	public static CommunityAgentReasoner getAgentsReasoner() {
+		return agentsReasoner;
+	}
+	
 	/**
 	 * 
 	 * @return

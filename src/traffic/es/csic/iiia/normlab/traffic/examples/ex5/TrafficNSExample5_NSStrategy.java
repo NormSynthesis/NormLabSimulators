@@ -11,6 +11,7 @@ import es.csic.iiia.nsm.config.Dimension;
 import es.csic.iiia.nsm.config.DomainFunctions;
 import es.csic.iiia.nsm.config.Goal;
 import es.csic.iiia.nsm.config.NormSynthesisSettings;
+import es.csic.iiia.nsm.metrics.NormSynthesisMetrics;
 import es.csic.iiia.nsm.net.norm.NormativeNetwork;
 import es.csic.iiia.nsm.norm.Norm;
 import es.csic.iiia.nsm.norm.NormativeSystem;
@@ -76,10 +77,10 @@ public class TrafficNSExample5_NSStrategy implements NormSynthesisStrategy {
 	 * @param 	nsm the norm synthesis machine
 	 * @param 	genMode the SIMON generalisation mode
 	 */
-	public TrafficNSExample5_NSStrategy(NormSynthesisMachine nsm) {
+	public TrafficNSExample5_NSStrategy(NormSynthesisMachine nsm,
+			NormSynthesisMetrics nsMetrics) {
 
 		this.nsm = nsm;
-
 		this.nsmSettings = nsm.getNormSynthesisSettings();
 		this.dmFunctions = nsm.getDomainFunctions();
 		this.predicatesDomains = this.nsm.getPredicatesDomains();
@@ -87,11 +88,12 @@ public class TrafficNSExample5_NSStrategy implements NormSynthesisStrategy {
 		this.monitor = nsm.getMonitor();
 
 		this.normReasoner = new NormReasoner(this.nsmSettings.getSystemGoals(), 
-				this.predicatesDomains, this.dmFunctions);
+				this.predicatesDomains, this.dmFunctions, nsMetrics);
 
-		this.operators = new TrafficNSExample5_NSOperators(this, normReasoner, nsm);
 		this.utilityFunction = new TrafficNSExample5_UtilityFunction();
 		this.conflicts = new HashMap<Goal, List<Conflict>>();
+		this.operators = new TrafficNSExample5_NSOperators(
+				this, normReasoner, nsm, nsMetrics);
 
 		this.normApplicability = new HashMap<ViewTransition, 
 				NormsApplicableInView>();
@@ -322,17 +324,9 @@ public class TrafficNSExample5_NSStrategy implements NormSynthesisStrategy {
 		return this.normAdditions;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean hasNonRegulatedConflictsThisTick() {
-		return false;
-	}
-
-	@Override
-  public void newNonRegulatedConflictsSolvedThisTick() {
-	  // TODO Auto-generated method stub
-	  
-  }
+//	@Override
+//  public void addDefaultNormativeSystem(List<Norm> defaultNorms) {
+//	  // TODO Auto-generated method stub
+//	  
+//  }
 }

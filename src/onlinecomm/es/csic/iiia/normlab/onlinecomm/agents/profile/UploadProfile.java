@@ -2,6 +2,7 @@ package es.csic.iiia.normlab.onlinecomm.agents.profile;
 
 import java.util.ArrayList;
 
+import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.space.grid.Grid;
 import es.csic.iiia.normlab.onlinecomm.bbdd.BbddManager;
 import es.csic.iiia.normlab.onlinecomm.content.IContent;
@@ -150,26 +151,32 @@ public class UploadProfile {
 	private void createContent(ArrayList<Integer> randomSectionList, int contentLength, int format, int contentType) {
 		IContent comment = null;
 
-
+		double tick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		
 		for (int i = 0; i < contentLength && !randomSectionList.isEmpty(); i++) {
 			switch(format){
 
 			case 0:
 				switch(contentType){
 				case idCorrect:
-					comment = new CorrectComment(1, contentType, "file", "url", "message", randomSectionList.remove(0), "correct");
+					comment = new CorrectComment(1, contentType, "file", "url",
+							"message", randomSectionList.remove(0), "correct", tick);
 					break;
 				case idSpam:
-					comment = new SpamComment(2, contentType, "file", "url", "message", randomSectionList.remove(0), "spam");
+					comment = new SpamComment(2, contentType, "file", "url",
+							"message", randomSectionList.remove(0), "spam", tick);
 					break;
 				case idPorn:
-					comment = new PornComment(3, contentType, "file", "url", "message", randomSectionList.remove(0), "porn");
+					comment = new PornComment(3, contentType, "file", "url",
+							"message", randomSectionList.remove(0), "porn", tick);
 					break;
 				case idViolent:
-					comment = new ViolentComment(4, contentType, "file", "url", "message", randomSectionList.remove(0), "violent");
+					comment = new ViolentComment(4, contentType, "file", "url",
+							"message", randomSectionList.remove(0), "violent", tick);
 					break;		
 				case idInsult:
-					comment = new InsultComment(6, contentType, "file", "url", "message", randomSectionList.remove(0), "insult");
+					comment = new InsultComment(6, contentType, "file", "url",
+							"message", randomSectionList.remove(0), "insult", tick);
 					break;	
 				}
 				break;

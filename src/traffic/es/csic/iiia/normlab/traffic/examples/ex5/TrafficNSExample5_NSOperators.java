@@ -7,6 +7,7 @@ import es.csic.iiia.nsm.NormSynthesisMachine;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.config.DomainFunctions;
 import es.csic.iiia.nsm.config.Goal;
+import es.csic.iiia.nsm.metrics.NormSynthesisMetrics;
 import es.csic.iiia.nsm.net.norm.NetworkNodeState;
 import es.csic.iiia.nsm.net.norm.NormativeNetwork;
 import es.csic.iiia.nsm.norm.Norm;
@@ -47,7 +48,8 @@ public class TrafficNSExample5_NSOperators {
 	 * @param 	nsm the norm synthesis machine
 	 */
 	public TrafficNSExample5_NSOperators(TrafficNSExample5_NSStrategy strategy, 
-			NormReasoner normReasoner, NormSynthesisMachine nsm) {
+			NormReasoner normReasoner, NormSynthesisMachine nsm, 
+			NormSynthesisMetrics nsMetrics) {
 		
 		this.strategy = strategy;
 		this.normReasoner = normReasoner;
@@ -56,7 +58,7 @@ public class TrafficNSExample5_NSOperators {
 		this.normativeNetwork = nsm.getNormativeNetwork();
 		
 		this.genMachine = new CBRNormGenerationMachine(this.normativeNetwork,
-				normReasoner, strategy);
+				normReasoner, strategy, nsm.getRandom(), nsMetrics);
 	}
 
 	/**

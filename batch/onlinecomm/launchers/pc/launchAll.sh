@@ -1,5 +1,6 @@
 #!/bin/bash
 
-for i in `seq 36`; do
-./Experiments_Launcher_$i.sh
-done
+./launchAll_IRON.sh
+./launchAll_SIMON.sh
+./launchAll_SIMONPlus.sh
+

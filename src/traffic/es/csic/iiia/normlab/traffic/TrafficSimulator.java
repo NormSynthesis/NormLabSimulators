@@ -23,10 +23,12 @@ import es.csic.iiia.normlab.traffic.factory.CarContextFactory;
 import es.csic.iiia.normlab.traffic.factory.TrafficFactFactory;
 import es.csic.iiia.normlab.traffic.map.CarMap;
 import es.csic.iiia.normlab.traffic.metrics.TrafficMetrics;
+import es.csic.iiia.normlab.traffic.normsynthesis.TrafficDomainFunctions;
 import es.csic.iiia.normlab.traffic.normsynthesis.TrafficNormSynthesisSettings;
 import es.csic.iiia.nsm.IncorrectSetupException;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.agent.language.TaxonomyOfTerms;
+import es.csic.iiia.nsm.config.DomainFunctions;
 import es.csic.iiia.nsm.norm.Norm;
 
 /**
@@ -79,11 +81,10 @@ public class TrafficSimulator implements TrafficElement {
 		if(TrafficNormSynthesisSettings.SIM_RANDOM_SEED != 0l) {
 			seed = TrafficNormSynthesisSettings.SIM_RANDOM_SEED;
 		}
-
+		
 		/* Create traffic predicates and their domains */
 		this.createPredicatesDomains();
 		
-		random = new Random(seed);
 		factFactory = new TrafficFactFactory(this.predDomains);
 		carContextFactory = new CarContextFactory(factFactory);
 		carMap = new CarMap(context, map, predDomains,
@@ -91,7 +92,9 @@ public class TrafficSimulator implements TrafficElement {
 		
 		/* Create norm synthesis elements */
 		this.createMonitorAgents();
-		this.createNormSynthesisStuff();
+		this.createNormSynthesisStuff(seed);
+		
+		random = this.normSynthesisAgent.getNormSynthesisMachine().getRandom();
 
 		/* Create traffic metrics */
 		this.trafficMetrics = (TrafficMetrics) this.normSynthesisAgent.getMetrics();
@@ -116,7 +119,7 @@ public class TrafficSimulator implements TrafficElement {
 			}
 
 			try {
-				this.normSynthesisAgent.step();
+				this.normSynthesisAgent.step(tick);
 			}
 			catch (IncorrectSetupException e) {
 				System.err.println("FATAL error, end of simulation...");
@@ -167,37 +170,44 @@ public class TrafficSimulator implements TrafficElement {
 	/**
 	 * Creates the norm synthesis agent
 	 */
-	private void createNormSynthesisStuff() {
+	private void createNormSynthesisStuff(long randomSeed) {
+		
+		DomainFunctions dmFunctions = new TrafficDomainFunctions(predDomains, 
+				TrafficSimulator.getCarContextFactory());
+		
+		TrafficNormSynthesisSettings nsSettings = 
+				new TrafficNormSynthesisSettings();
 		
 		switch(TrafficNormSynthesisSettings.NORM_SYNTHESIS_EXAMPLE) {
 		case 0:
 			this.normSynthesisAgent = new	DefaultTrafficNormSynthesisAgent(
-					this.trafficCameras, predDomains);
+					this.trafficCameras, predDomains, dmFunctions,
+					nsSettings, randomSeed);
 			break;
 			
 		case 1:
 			this.normSynthesisAgent = new	TrafficNSExample1_NSAgent(
-					this.trafficCameras);
+					nsSettings, this.predDomains,	dmFunctions);
 			break;
 
 		case 2:
 			this.normSynthesisAgent = new	TrafficNSExample2_NSAgent(
-					this.trafficCameras);
+					nsSettings, this.predDomains,	dmFunctions);
 			break;
 
 		case 3:
 			this.normSynthesisAgent = new	TrafficNSExample3_NSAgent(
-					this.trafficCameras, predDomains);
+					nsSettings, this.predDomains, dmFunctions, this.trafficCameras);
 			break;
 			
 		case 4:
 			this.normSynthesisAgent = new	TrafficNSExample4_NSAgent(
-					this.trafficCameras, this.predDomains);
+					nsSettings, this.predDomains, dmFunctions, this.trafficCameras);
 			break;
 
 		case 5:
 			this.normSynthesisAgent = new	TrafficNSExample5_NSAgent(
-					this.trafficCameras, this.predDomains);
+					nsSettings, this.predDomains, dmFunctions, this.trafficCameras);
 			break;			
 		}
 	}
@@ -247,14 +257,14 @@ public class TrafficSimulator implements TrafficElement {
 		return this.trafficMetrics.hasConverged();
 	}
 
-	/**their own method for traffic regulation
-	 * Prints information about metrics in the current step
-	 */
-	private void printStepResume() {
-		System.out.println("\nSTEP RESUME");
-		System.out.println("----------------------------");
-		System.out.println("Step: " + tick);
-	}
+//	/**
+//	 * Prints information about metrics in the current step
+//	 */
+//	private void printStepResume() {
+//		System.out.println("\nSTEP RESUME");
+//		System.out.println("----------------------------");
+//		System.out.println("Step: " + tick);
+//	}
 
 	//-----------------------------------------------------------------
 	// Static methods

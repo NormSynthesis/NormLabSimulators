@@ -3,11 +3,9 @@ package es.csic.iiia.normlab.traffic.examples.ex5;
 import java.util.ArrayList;
 import java.util.List;
 
-import es.csic.iiia.normlab.traffic.TrafficSimulator;
 import es.csic.iiia.normlab.traffic.agent.TrafficNormSynthesisAgent;
 import es.csic.iiia.normlab.traffic.agent.monitor.TrafficCamera;
-import es.csic.iiia.normlab.traffic.normsynthesis.TrafficDomainFunctions;
-import es.csic.iiia.normlab.traffic.normsynthesis.TrafficNormSynthesisSettings;
+import es.csic.iiia.normlab.traffic.metrics.TrafficMetrics;
 import es.csic.iiia.nsm.IncorrectSetupException;
 import es.csic.iiia.nsm.NormSynthesisMachine;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
@@ -29,8 +27,6 @@ public class TrafficNSExample5_NSAgent implements TrafficNormSynthesisAgent {
 	//---------------------------------------------------------------------------
 
 	private NormSynthesisMachine nsm;
-	private NormSynthesisSettings nsmSettings;
-	private DomainFunctions dmFunctions;
 	private NormativeSystem normativeSystem;
 	private List<Norm> addedNorms;
 	private List<Norm> removedNorms;
@@ -42,9 +38,12 @@ public class TrafficNSExample5_NSAgent implements TrafficNormSynthesisAgent {
 	/**
 	 * Constructor of the example
 	 */
-	public TrafficNSExample5_NSAgent(List<TrafficCamera> cameras,
-			PredicatesDomains predDomains) {
+	public TrafficNSExample5_NSAgent(NormSynthesisSettings nsSettings, 
+			PredicatesDomains predDomains, DomainFunctions dmFunctions, 
+			List<TrafficCamera> cameras) {
 		
+		/* Create the normative system, which will contain the norms 
+		 * available to the agents */
 		this.normativeSystem = new NormativeSystem();
 		
 		/* Create lists to control additions and
@@ -52,22 +51,24 @@ public class TrafficNSExample5_NSAgent implements TrafficNormSynthesisAgent {
 		this.addedNorms = new ArrayList<Norm>();
 		this.removedNorms = new ArrayList<Norm>();
 		
-		/* Create norm synthesis settings */
-		this.nsmSettings = new TrafficNormSynthesisSettings();
-		this.dmFunctions = new TrafficDomainFunctions(predDomains, 
-				TrafficSimulator.getCarContextFactory());
-		
 		/* Create norm synthesis machine */
-		this.nsm = new NormSynthesisMachine(nsmSettings, predDomains, dmFunctions, true);
+		this.nsm = new NormSynthesisMachine(nsSettings, predDomains,
+				dmFunctions, true, 0l);
 
 		/* Add sensors to the monitor of the norm synthesis machine */
 		for(TrafficCamera camera : cameras) {
 			this.nsm.addSensor(camera);	
 		}
 		
-		/* Set the norm synthesis strategy */
-		TrafficNSExample5_NSStrategy strategy =	new TrafficNSExample5_NSStrategy(this.nsm);
-		this.nsm.useStrategy(strategy);
+		/* Create traffic metrics */
+		TrafficMetrics nsMetrics = new TrafficMetrics(nsm);
+		
+		/* Create the norm synthesis strategy */
+		TrafficNSExample5_NSStrategy strategy =	
+				new TrafficNSExample5_NSStrategy(this.nsm, nsMetrics);
+		
+		/* Setup the norm synthesis machine with the created strategy */
+		this.nsm.setup(strategy, nsMetrics, null, null);
 	}
 
 	/**
@@ -75,12 +76,12 @@ public class TrafficNSExample5_NSAgent implements TrafficNormSynthesisAgent {
 	 * 
 	 * @throws IncorrectSetupException 
 	 */
-	public void step() throws IncorrectSetupException {
+	public void step(long timeStep) throws IncorrectSetupException {
 		this.addedNorms.clear();
 		this.removedNorms.clear();
 		
 		/* Execute strategy and obtain new normative system */
-		NormativeSystem newNormativeSystem = nsm.executeStrategy();
+		NormativeSystem newNormativeSystem = nsm.executeStrategy(timeStep);
 
 		/* Check norm additions to the normative system */ 
 		for(Norm norm : newNormativeSystem) {

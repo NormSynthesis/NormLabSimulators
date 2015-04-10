@@ -12,8 +12,9 @@ package es.csic.iiia.normlab.onlinecomm.content.comment;
 public class WrongPlacementComment extends Comment {
 	
 	public WrongPlacementComment(int id, int contentType, String file,
-			String url, String message, int section, String contentTypeDesc) {
+			String url, String message, int section, String contentTypeDesc, double timeStep) {
 		
-		super( id, contentType, file, url, message, section, contentTypeDesc);
+		super( id, contentType, file, url, message,
+				section, contentTypeDesc, timeStep);
 	}
 }

@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import repast.simphony.engine.environment.RunEnvironment;
-import es.csic.iiia.normlab.traffic.TrafficSimulator;
 import es.csic.iiia.normlab.traffic.agent.monitor.TrafficCamera;
-import es.csic.iiia.normlab.traffic.factory.CarContextFactory;
-import es.csic.iiia.normlab.traffic.factory.TrafficFactFactory;
+import es.csic.iiia.normlab.traffic.custom.MySecondStrategy;
 import es.csic.iiia.normlab.traffic.metrics.TrafficMetrics;
-import es.csic.iiia.normlab.traffic.normsynthesis.TrafficDomainFunctions;
 import es.csic.iiia.normlab.traffic.normsynthesis.TrafficNormSynthesisSettings;
 import es.csic.iiia.nsm.IncorrectSetupException;
 import es.csic.iiia.nsm.NormSynthesisMachine;
@@ -20,6 +17,7 @@ import es.csic.iiia.nsm.config.NormSynthesisSettings;
 import es.csic.iiia.nsm.metrics.NormSynthesisMetrics;
 import es.csic.iiia.nsm.norm.Norm;
 import es.csic.iiia.nsm.norm.NormativeSystem;
+import es.csic.iiia.nsm.strategy.NormSynthesisStrategy;
 
 /**
  * 
@@ -34,11 +32,11 @@ implements TrafficNormSynthesisAgent {
 	//---------------------------------------------------------------------------
 
 	private NormSynthesisMachine nsm;
-	private NormSynthesisSettings nsmSettings;
-	private DomainFunctions dmFunctions;
+	private NormSynthesisSettings nsSettings;
 	private NormativeSystem normativeSystem;
 	private List<Norm> addedNorms;
 	private List<Norm> removedNorms;
+	private NormSynthesisMetrics nsMetrics;
 
 	//---------------------------------------------------------------------------
 	// Methods
@@ -48,42 +46,50 @@ implements TrafficNormSynthesisAgent {
 	 * 
 	 */
 	public DefaultTrafficNormSynthesisAgent(List<TrafficCamera> cameras,
-			PredicatesDomains predDomains) {
+			PredicatesDomains predDomains, DomainFunctions dmFunctions, 
+			NormSynthesisSettings nsSettings, long randomSeed) {
+
+		this.nsSettings = nsSettings;
 		
 		this.normativeSystem = new NormativeSystem();
 		this.addedNorms = new ArrayList<Norm>();
 		this.removedNorms = new ArrayList<Norm>();
-		this.nsmSettings = new TrafficNormSynthesisSettings();
-		this.dmFunctions = new TrafficDomainFunctions(predDomains, 
-				TrafficSimulator.getCarContextFactory());
-
-		/* 1. Create norm synthesis machine */
-		this.nsm = new NormSynthesisMachine(nsmSettings, predDomains,
-				dmFunctions, !RunEnvironment.getInstance().isBatch());
 		
+		/* 1. Create norm synthesis machine */
+		this.nsm = new NormSynthesisMachine(nsSettings, predDomains,
+				dmFunctions, !RunEnvironment.getInstance().isBatch(), randomSeed);
+
 		/* 2. Add sensors to the monitor of the norm synthesis machine */
 		for(TrafficCamera camera : cameras) {
 			this.nsm.addSensor(camera);	
 		}
-		
+
 		/* 3. Set the norm synthesis strategy */
 		this.setNormSynthesisStrategy();
-		
-		/* 4. Set metrics */
-		this.setTrafficMetrics();
 	}
 
 	/**
 	 * @throws IncorrectSetupException 
 	 * 
 	 */
-	public void step() throws IncorrectSetupException {
+	public void step(long timeStep) throws IncorrectSetupException {
+		double startTime, finishTime, compTime;
+		
 		this.addedNorms.clear();
 		this.removedNorms.clear();
 
+		/* Save time just before executing the strategy */
+		startTime = System.nanoTime();
+		
 		/* Execute strategy and obtain new normative system */
-		NormativeSystem newNormativeSystem = nsm.executeStrategy();
+		NormativeSystem newNormativeSystem = nsm.executeStrategy(timeStep);
 
+		/* Compute elapsed time during the strategy execution */
+		finishTime = System.nanoTime();
+		compTime = (finishTime - startTime) / 1000000;
+		
+		this.nsm.getNormSynthesisMetrics().addNewComputationTime(compTime);
+		
 		/* Check norm additions to the normative system */ 
 		for(Norm norm : newNormativeSystem) {
 			if(!normativeSystem.contains(norm)) {
@@ -103,52 +109,43 @@ implements TrafficNormSynthesisAgent {
 		for(Norm norm : removedNorms) {
 			this.normativeSystem.remove(norm);
 		}
-		
-		for(Norm n1 : newNormativeSystem) {
-//			if(!normativeSystem.contains(n1))
-//				System.out.println();
-		}
+
+		//		for(Norm n1 : newNormativeSystem) {
+		//			if(!normativeSystem.contains(n1))
+		//				System.out.println();
+		//		}
 	}
 
 	/**
 	 * Sets the norm synthesis strategy
 	 */
 	protected void setNormSynthesisStrategy() {
-		NormGeneralisationMode nGenMode = nsmSettings.getNormGeneralisationMode();
-		int nGenStep = nsmSettings.getNormGeneralisationStep();
+		NormGeneralisationMode genMode = nsSettings.getNormGeneralisationMode();
+		int genStep = nsSettings.getNormGeneralisationStep();
+		NormSynthesisStrategy.Option option = null;
 
+		this.nsMetrics = new TrafficMetrics(nsm);
+		
 		/* Finally, set norm synthesis strategy */
 		switch(TrafficNormSynthesisSettings.NORM_SYNTHESIS_STRATEGY) {
 
 		case 0:
-			this.setCustomNormSynthesisStrategy();
-			break;
-
-			/* IRON strategy */ 
-		case 1:
-			this.nsm.useIRONNormSynthesisStrategy();
-			break;
-
-			/* SIMON strategy */
-		case 2:
-			this.nsm.useSIMONNormSynthesisStrategy(nGenMode, nGenStep);
-			break;
-
-			/* XSIMON strategy */
-		case 3:
-			this.nsm.useLIONNormSynthesisStrategy(nGenMode, nGenStep);
-			break;
+			
+			/* Create and setup custom norm synthesis strategy */
+			NormSynthesisStrategy strategy = this.createCustomNormSynthesisStrategy();
+			this.nsm.setup(strategy, nsMetrics, null, null);
+			return;
+			
+		case 1:			option = NormSynthesisStrategy.Option.IRON;				break;
+		case 2:			option = NormSynthesisStrategy.Option.SIMON;			break;
+		case 3:			option = NormSynthesisStrategy.Option.SIMONPlus;	break;
+		case 4:			option = NormSynthesisStrategy.Option.LION;				break;
 		}
+
+		/* Setup predefined norm synthesis strategy */
+		this.nsm.setup(option, genMode, genStep, this.nsMetrics, null, null);
 	}
 
-	/**
-	 * 
-	 */
-	private void setTrafficMetrics() {
-		TrafficMetrics metrics = new TrafficMetrics(nsm);
-		this.nsm.useNormSynthesisMetrics(metrics);
-	}
-	
 	/**
 	 * 
 	 * @return
@@ -190,17 +187,9 @@ implements TrafficNormSynthesisAgent {
 	}
 
 	/**
-	 * 
-	 * @return
-	 */
-	public DomainFunctions getDomainFunctions() {
-		return this.dmFunctions;
-	}
-
-	/**
 	 * Sets a custom norm synthesis strategy
 	 */
-	protected void setCustomNormSynthesisStrategy() {
-		
+	protected NormSynthesisStrategy createCustomNormSynthesisStrategy() {
+		return new MySecondStrategy(nsm);
 	}
 }

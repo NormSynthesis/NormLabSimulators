@@ -7,7 +7,7 @@ import numpy as np
 import os
 import plotData as plot
 
-def getMeans(files):
+def getMeans(files, meanvals):
     for i in xrange(0, 5):
         vals = None
         for num, filename in enumerate(files, 1):
@@ -51,7 +51,32 @@ def saveMeans(column, meanvals, path):
 #     return files
 
 
+def main(path, runs):
+    for i in xrange(1, 13):
+        files = []
+        meanvals = {}
+        for j in xrange(1, int(runs)+1):
+            poblacion = "Population"+str(i)+"-run" + str(j)+".dat"
+            file = path + poblacion
+            files.append(file)
 
+        meanvals, column = getMeans(files, meanvals)
+        pathAverage = path+"Averages/Population"+str(i)+"-average.dat"
+
+        # Create folder if doesnt exists.
+
+        dir = os.path.dirname(pathAverage)
+        try:
+            os.stat(dir)
+        except:
+            os.mkdir(dir)
+
+        saveMeans(column, meanvals, pathAverage)
+
+        # Create plot of the average file.
+        plot.main(pathAverage)
+
+        print pathAverage + " COMPUTED"
 
 #_______________________________________________________________
 #
@@ -60,38 +85,16 @@ def saveMeans(column, meanvals, path):
 #
 #      Call:
 #
-#             python createAverage.py {PATH} {Nº Of Runs}
+#             python createAverage.py {PATH} {N Of Runs}
 #
 #
 #_______________________________________________________________
 
 
-path = sys.argv[1]
-runs = sys.argv[2]
+if __name__ == '__main__':
+    path = sys.argv[1]
+    runs = sys.argv[2]
+    print path
 
-for i in xrange(1, 13):
-    files = []
-    meanvals = {}
+    main(path, runs)
 
-    for j in xrange(1, runs+1):
-        poblacion = "Poblacion"+str(i)+"-run" + str(j)+".dat"
-        file = path + poblacion
-        files.append(file)
-
-    meanvals, column = getMeans(files)
-    pathAverage = path+"Averages/Poblacion"+str(i)+"-average.dat"
-
-    # Create folder if doesnt exists.
-
-    dir = os.path.dirname(pathAverage)
-    try:
-        os.stat(dir)
-    except:
-        os.mkdir(dir)
-
-    saveMeans(column, meanvals, pathAverage)
-
-    # Create plot of the average file.
-    plot.main(pathAverage)
-
-    print pathAverage + " COMPUTED"

@@ -24,7 +24,10 @@ public class TrafficStateCodifier
 	public static String codify(TrafficElement element)	{
 		String desc = "";
 		
-		if(element instanceof Wall)	{
+		if(element == null) {
+			desc = TrafficStateManager.NOTHING;
+		}
+		else if(element instanceof Wall)	{
 			desc = TrafficStateManager.WALL;
 		}
 		else if(element instanceof TrafficLight) {
@@ -41,8 +44,8 @@ public class TrafficStateCodifier
 				desc = TrafficStateManager.COLLISION + codifyCollision((Collision)element);
 			}
 		}
-		desc = StringUtils.rightPad(desc, 63, '0');
 		
+		desc = StringUtils.rightPad(desc, 63, '0');
 		return desc;
 	}
 
@@ -55,7 +58,7 @@ public class TrafficStateCodifier
 		
 		switch(TrafficStateManager.getType(codDesc)) {
 			case Wall:
-				desc = "|";
+				desc = "w";
 				break;
 				
 			case TrafficLight:
@@ -77,9 +80,14 @@ public class TrafficStateCodifier
   		case Anything:
   			desc = "*";
   			break;
+  		
+  		case Nothing:
+  			desc = "-";
+  			break;
   			
   		default:
-  			desc = "-";
+  			desc = "?";
+  			break;
 		}
 		return desc;
 	}
@@ -91,7 +99,7 @@ public class TrafficStateCodifier
 	public static String codify(String desc) {
 		String codDesc = "";
 		
-		if(desc.equals("|")) {
+		if(desc.equals("w")) {
 			codDesc = StringUtils.rightPad(TrafficStateManager.WALL, 63, '0');
 		}
 		else if(desc.equals("^")) {
@@ -110,7 +118,10 @@ public class TrafficStateCodifier
 			codDesc = StringUtils.rightPad(TrafficStateManager.ANYTHING, 63, '0');
 		}
 		else if(desc.equals("-")) {
-			codDesc = StringUtils.rightPad("0", 63, '0');
+			codDesc = StringUtils.rightPad(TrafficStateManager.NOTHING, 63, '0');
+		}
+		else {
+			codDesc = StringUtils.rightPad(TrafficStateManager.UNKNOWN, 63, '0');
 		}
 		return codDesc;
 	}

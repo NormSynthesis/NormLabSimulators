@@ -3,9 +3,10 @@ package es.csic.iiia.normlab.traffic.style;
 import java.awt.Color;
 import java.awt.Font;
 
+import org.piccolo2d.nodes.PText;
+
 import repast.simphony.visualizationOGL2D.DefaultStyleOGL2D;
 import saf.v3d.scene.VSpatial;
-import edu.umd.cs.piccolo.nodes.PText;
 import es.csic.iiia.normlab.traffic.agent.Car;
 import es.csic.iiia.normlab.traffic.car.CarReasonerState;
 

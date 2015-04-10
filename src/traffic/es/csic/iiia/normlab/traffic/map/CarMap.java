@@ -158,18 +158,13 @@ public class CarMap extends TrafficMatrix {
 		// Clear previous information
 		this.clear();
 		
-		for(int row=startRow; row<=stopRow; row++)
-		{
-			for(int col=startCol; col<=stopCol; col++)
-			{
+		for(int row=startRow; row<=stopRow; row++) {
+			for(int col=startCol; col<=stopCol; col++) {
   			TrafficElement elem = this.getElement(row, col);
   			
-  			if(elem!=null)
-  			{
   				// Create binary description and add it to the position
   				codState = TrafficStateCodifier.codify(elem);  				
   				this.set(row, col, codState);
-  			}
 			}
 		}
 	}
@@ -425,8 +420,7 @@ public class CarMap extends TrafficMatrix {
 	 * @param col
 	 * @return
 	 */
-	public TrafficElement getElement(int row, int col) 
-	{
+	public TrafficElement getElement(int row, int col) {
 		return this.map.getObjectAt(col, yDim-1-row);
 	}
 	

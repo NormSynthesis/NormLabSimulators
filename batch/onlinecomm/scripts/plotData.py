@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
 import matplotlib.pyplot as plt
-import pylab
 import sys
 import os
+
 
 def main(dataFile):
     values = []
@@ -46,17 +46,16 @@ def main(dataFile):
     # Save figure or show
     # plt.savefig('ExperimentGraphic.png')
     base = os.path.splitext(dataFile)[0]
+
+
     plt.savefig(base + ".png")
 
-    #print "Plot successfully generated"
-    #plt.show()
-
+    # print "Plot successfully generated"
+    # plt.show()
+    print base + " plot DONE"
     # Close plot
     plt.close()
 
-
-dataFile = sys.argv[1]
-
-if __name__ == "__main__":
+if __name__ == '__main__':
+    dataFile = sys.argv[1]
     main(dataFile)
-

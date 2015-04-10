@@ -15,6 +15,11 @@ public class TrafficStateManager
 	/**
 	 * 
 	 */
+	public static final String NOTHING = "000";
+	
+	/**
+	 * 
+	 */
 	public static final String WALL = "001";
 
 	/**
@@ -40,7 +45,12 @@ public class TrafficStateManager
 	/**
 	 * 
 	 */
-	public static final String ANYTHING = "111";
+	public static final String ANYTHING = "110";
+	
+	/**
+	 * 
+	 */
+	public static final String UNKNOWN = "111";
 	
 	/**
 	 * 
@@ -57,7 +67,8 @@ public class TrafficStateManager
 		else if (type.equals(COLLISION))		return StateType.Collision;
 		else if (type.equals(VIOL_COL))			return StateType.ViolCollision;
 		else if (type.equals(ANYTHING))			return StateType.Anything;
-		else 																return StateType.Nothing;
+		else if (type.equals(NOTHING))			return StateType.Nothing;
+		else 																return StateType.Unknown;
 	}
 
 	/**
@@ -103,8 +114,7 @@ public class TrafficStateManager
 	 * @param codDesc
 	 * @return
 	 */
-	public static long getCarId(String codDesc)
-	{
+	public static long getCarId(String codDesc)	{
 		return Long.valueOf(codDesc.substring(3, 11), 2);
 	}
 
@@ -213,6 +223,8 @@ public class TrafficStateManager
 
 		Anything, 
 		
-		Nothing;
+		Nothing,
+		
+		Unknown;
 	}
 }
