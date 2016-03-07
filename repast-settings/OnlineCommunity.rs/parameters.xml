@@ -23,7 +23,7 @@
 	
 	<parameter 	name="maxAgents" displayName="Number max agents"
 				type="int" 
-				defaultValue="100" 
+				defaultValue="10" 
 				isReadOnly="false" 
 				converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
 

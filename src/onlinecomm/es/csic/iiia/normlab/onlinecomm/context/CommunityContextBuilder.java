@@ -184,9 +184,12 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		CommunityWatcher watcher = new CommunityWatcher(contextData);
 		
 		boolean isGui = !RunEnvironment.getInstance().isBatch();
-		CommunityNormSynthesisAgent nsAgent =
-				new CommunityNormSynthesisAgent(watcher, contextData, predDomains, seed);
+		this.nsAgent = new CommunityNormSynthesisAgent(watcher, contextData, predDomains, seed);
 
+		/* Get random and set it in the contextData */
+		random = this.nsAgent.getNormSynthesisMachine().getRandom();
+		contextData.setRandom(random);
+		
 		// Create scheduler for watcher
 		scheduleParams = ScheduleParameters.createRepeating(start, interval, -2);
 		schedule.schedule(scheduleParams, watcher, "perceive");
