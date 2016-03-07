@@ -53,7 +53,7 @@ public class BbddManager {
 	 */
 	public void connect(){
 		String userName = "root";
-		String password = "070501a";
+		String password = "normlab";
 		String direction = "jdbc:mysql://localhost/onlineCommunity";
 
 		try {
