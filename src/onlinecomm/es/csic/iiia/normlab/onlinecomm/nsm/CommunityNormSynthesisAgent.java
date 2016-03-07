@@ -98,6 +98,14 @@ public class CommunityNormSynthesisAgent {
 		/* Create norm synthesis machine */
 		this.nsm = new NormSynthesisMachine(nsmSettings, predDomains, dmFunctions,
 		    true, randomSeed);
+		
+		/* Add sensors to the monitor of the norm synthesis machine */
+		this.nsm.addSensor(watcher);
+
+		agentsReasoner = new CommunityAgentReasoner(predDomains,contextData);
+		
+		/* 3. Set the norm synthesis strategy */
+		this.setNormSynthesisStrategy();
 
 	}
 
@@ -245,8 +253,7 @@ public class CommunityNormSynthesisAgent {
 		case 0:			this.setCustomNormSynthesisStrategy();						break;
 		case 1:			option = NormSynthesisStrategy.Option.IRON;				break;
 		case 2:			option = NormSynthesisStrategy.Option.SIMON;			break;
-		case 3:			option = NormSynthesisStrategy.Option.SIMONPlus;	break;
-		case 4:			option = NormSynthesisStrategy.Option.LION;				break;
+		case 3:			option = NormSynthesisStrategy.Option.LION;				break;
 		}
 
 		this.metricsManager = new CommunityMetricsManager(contextData, nsm);

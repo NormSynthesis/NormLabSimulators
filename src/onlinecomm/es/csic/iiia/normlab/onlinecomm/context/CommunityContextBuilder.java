@@ -72,6 +72,7 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	// Schedule parameters
 	private double start = 1, interval = 1, priority = 0;
 	
+	private CommunityNormSynthesisAgent nsAgent;
 	private PredicatesDomains predDomains;
 
 	/**
@@ -86,9 +87,12 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	public Context<Object> build(Context<Object> context) {
 		CommunityContextBuilder.context = context;
 
-		random = new Random();
-		contextData = new ContextData(random);
-
+		Parameters params = RunEnvironment.getInstance().getParameters();
+		int maxAgents = (Integer) params.getValue("maxAgents");	
+		long contentsQueueSize = (Long) params.getValue("ContentsQueueSize");
+		
+		contextData = new ContextData(maxAgents, contentsQueueSize);
+		
 		context.setId("OnlineCommunityContext");
 
 		ContinuousSpaceFactory spaceFactory = 
@@ -134,16 +138,13 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 			ConfigureAgentWindow caw = new ConfigureAgentWindow(new JFrame(), true);
 			createAgentsPopulation(caw.getAgents(), this.predDomains);
 			agents = caw.getAgents();
-
 		}
 		else {
 			XMLParser leerFichero = new XMLParser();
 			ArrayList<CommunityAgent> agentes = leerFichero.getPopulationFromXML();		
 			createAgentsPopulation(agentes, this.predDomains);
 			agents = agentes;
-
 		}
-		
 	
 		for(CommunityAgent a : agents) {
 			if(a.getType() != 1) {
@@ -154,7 +155,6 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		contextData.setIdealNormativeSystemCardinality(idealNormativeSystemCardinality);
 
 		// Read the stop tick from the parameters of the simulation 
-		Parameters params = RunEnvironment.getInstance().getParameters();
 		int stopTick= (Integer) params.getValue("StopTick");		
 		
 		// Edit the simulation to stop at the tick read from the parameter.
@@ -200,26 +200,6 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 
 		return nsAgent;
 	}
-
-//	/**
-//	 * Method to create the iron agent and also create its scheduled methods to run every tick.
-//	 */
-//	private void createMetricsManager(NormSynthesisMachine nsm)
-//	{
-////		ScheduleParameters scheduleParams;
-////		ISchedule schedule;
-//
-////		schedule = RunEnvironment.getInstance().getCurrentSchedule();
-//
-//		CommunityMetricsManager metricsManager = new CommunityMetricsManager(contextData, nsm);
-//
-//		// Create scheduler for manager
-////		scheduleParams = ScheduleParameters.createRepeating(start, interval, -2);
-////		schedule.schedule(scheduleParams, metricsManager, "update");
-//
-//		context.add(metricsManager);
-//	}
-
 
 	/**
 	 * Method to create the iron agent and also create its scheduled methods to run every tick.

@@ -9,8 +9,6 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import es.csic.iiia.normlab.onlinecomm.content.IContent;
-import repast.simphony.engine.environment.RunEnvironment;
-import repast.simphony.parameter.Parameters;
 
 /**
  * Context data of the context
@@ -38,11 +36,10 @@ public class ContextData {
 	private int numColumns = 36;//maxCommentsPhotoVideo+maxCommentsForum+maxCommentsTheReporter+3;
 	
 	//Get the maximum agents variable from initial parameter.
-	Parameters params = RunEnvironment.getInstance().getParameters();
-	private int maxAgents= (Integer) params.getValue("maxAgents");			
+	private int maxAgents; 
 	
 	private int numAgents = 0;	
-	private int numRows = (maxAgents * 2) + 1; // two rows for each agent and one more fore the sections
+	private int numRows;
 	
 	//ArrayLists where the simulation put the contents 
 	private List<IContent> listSectionTheReporter;
@@ -94,23 +91,37 @@ public class ContextData {
 	 * @param random
 	 * 			Random variable to use in all the simulation.
 	 */
-	public ContextData(Random random){
-		listSectionTheReporter = Collections.synchronizedList(new ArrayList<IContent>());
-		listSectionForum = Collections.synchronizedList(new ArrayList<IContent>());
-		listSectionPhotoVideo = Collections.synchronizedList(new ArrayList<IContent>());		
-		mostViewListTheReporter = Collections.synchronizedList(new ArrayList<IContent>());
-		mostViewListForum = Collections.synchronizedList(new ArrayList<IContent>());
-		mostViewListPhotoVideo = Collections.synchronizedList(new ArrayList<IContent>());
-		actualUploadList = Collections.synchronizedList(new ArrayList<IContent>());
-		actualViewList = Collections.synchronizedList(new ArrayList<IContent>());
-		actualComplaintList = Collections.synchronizedList(new ArrayList<IContent>());
-		allContents = Collections.synchronizedList(new ArrayList<IContent>());
+	public ContextData(int maxAgents, long contentsQueueSize){
 		
-		this.random = random;
+//		listSectionTheReporter = Collections.synchronizedList(new ArrayList<IContent>());
+//		listSectionForum = Collections.synchronizedList(new ArrayList<IContent>());
+//		listSectionPhotoVideo = Collections.synchronizedList(new ArrayList<IContent>());
+//		mostViewListTheReporter = Collections.synchronizedList(new ArrayList<IContent>());
+//		mostViewListForum = Collections.synchronizedList(new ArrayList<IContent>());
+//		mostViewListPhotoVideo = Collections.synchronizedList(new ArrayList<IContent>());
+//		actualUploadList = Collections.synchronizedList(new ArrayList<IContent>());
+//		actualViewList = Collections.synchronizedList(new ArrayList<IContent>());
+//		actualComplaintList = Collections.synchronizedList(new ArrayList<IContent>());
+//		allContents = Collections.synchronizedList(new ArrayList<IContent>());
+		
+		listSectionTheReporter = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		listSectionForum = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		listSectionPhotoVideo = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		mostViewListTheReporter = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		mostViewListForum = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		mostViewListPhotoVideo = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		actualUploadList = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		actualViewList = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		actualComplaintList = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize / 3));
+		allContents = Collections.synchronizedList(new CircularFifoQueue<IContent>(contentsQueueSize));
+		
 		collection = new XYSeriesCollection();
 		serie = new XYSeries("Complaints No regulados", true, true);
 		serie2 = new XYSeries("Complaints regulados", true, true);
 		serie3 = new XYSeries("Actual Complaints", true, true);
+		
+		this.maxAgents = maxAgents;
+		this.numRows = (maxAgents * 2) + 1; // two rows for each agent and one more fore the sections		
 	}	
 	
 	//Getters and setters
@@ -190,7 +201,8 @@ public class ContextData {
 	
 	//Methods of the list of categories
 	public void addContentListSectionTheReporter(IContent content){
-		listSectionTheReporter.add(0,content);
+//		listSectionTheReporter.add(0,content);
+		listSectionTheReporter.add(content);
 		this.allContents.add(content);
 	}
 	public IContent getContentListSectionTheReporter(int index){
@@ -203,7 +215,8 @@ public class ContextData {
 		listSectionTheReporter.remove(content);
 	}
 	public void addContentListSectionForum(IContent content){
-		listSectionForum.add(0,content);
+//		listSectionForum.add(0,content);
+		listSectionForum.add(content);
 		this.allContents.add(content);
 	}
 	public IContent getContentListSectionForum(int index){
@@ -216,7 +229,8 @@ public class ContextData {
 		listSectionForum.remove(content);
 	}
 	public void addContentListSectionPhotoVideo(IContent content){
-		listSectionPhotoVideo.add(0,content);
+//		listSectionPhotoVideo.add(0,content);
+		listSectionPhotoVideo.add(content);
 		this.allContents.add(content);
 	}
 	public IContent getContentListSectionPhotoVideo(int index){
@@ -483,5 +497,22 @@ public class ContextData {
 			int idealNormativeSystemCardinality) {
 		this.idealNormativeSystemCardinality = idealNormativeSystemCardinality;
 		
+	}
+
+	public Random getRandom() {
+		return random;
+	}
+
+	public void setRandom(Random random) {
+		this.random = random;
+	}
+
+	public IContent getContentWithId(int contentId) {
+		for(IContent content: this.allContents) {
+			if(content.getId() == contentId) {
+				return content;
+			}
+		}
+		return null;
 	}
 }
