@@ -172,6 +172,7 @@ public class TrafficSimulator implements TrafficElement {
 	 */
 	private void createNormSynthesisStuff(long randomSeed) {
 		
+		
 		DomainFunctions dmFunctions = new TrafficDomainFunctions(predDomains, 
 				TrafficSimulator.getCarContextFactory());
 		
@@ -210,6 +211,38 @@ public class TrafficSimulator implements TrafficElement {
 					nsSettings, this.predDomains, dmFunctions, this.trafficCameras);
 			break;			
 		}
+		
+//		switch(TrafficNormSynthesisSettings.NORM_SYNTHESIS_EXAMPLE) {
+//		case 0:
+//			this.normSynthesisAgent = new	DefaultTrafficNormSynthesisAgent(
+//					this.trafficCameras, predDomains);
+//			break;
+//			
+//		case 1:
+//			this.normSynthesisAgent = new	TrafficNSExample1_NSAgent(
+//					this.trafficCameras);
+//			break;
+//
+//		case 2:
+//			this.normSynthesisAgent = new	TrafficNSExample2_NSAgent(
+//					this.trafficCameras);
+//			break;
+//
+//		case 3:
+//			this.normSynthesisAgent = new	TrafficNSExample3_NSAgent(
+//					this.trafficCameras, predDomains);
+//			break;
+//			
+//		case 4:
+//			this.normSynthesisAgent = new	TrafficNSExample4_NSAgent(
+//					this.trafficCameras, this.predDomains);
+//			break;
+//
+//		case 5:
+//			this.normSynthesisAgent = new	TrafficNSExample5_NSAgent(
+//					this.trafficCameras, this.predDomains);
+//			break;			
+//		}
 	}
 	
 	/**
@@ -257,14 +290,14 @@ public class TrafficSimulator implements TrafficElement {
 		return this.trafficMetrics.hasConverged();
 	}
 
-//	/**
-//	 * Prints information about metrics in the current step
-//	 */
-//	private void printStepResume() {
-//		System.out.println("\nSTEP RESUME");
-//		System.out.println("----------------------------");
-//		System.out.println("Step: " + tick);
-//	}
+	/**their own method for traffic regulation
+	 * Prints information about metrics in the current step
+	 */
+	private void printStepResume() {
+		System.out.println("\nSTEP RESUME");
+		System.out.println("----------------------------");
+		System.out.println("Step: " + tick);
+	}
 
 	//-----------------------------------------------------------------
 	// Static methods

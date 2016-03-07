@@ -1,5 +1,6 @@
 package es.csic.iiia.normlab.onlinecomm.content.comment;
 
+import repast.simphony.engine.environment.RunEnvironment;
 import es.csic.iiia.normlab.onlinecomm.content.IComplaint;
 import es.csic.iiia.normlab.onlinecomm.content.IContent;
 import es.csic.iiia.nsm.norm.Norm;
@@ -23,7 +24,7 @@ public class Comment implements IContent {
 	private String message;
 	private Norm violatedNorm = null;
 	private IComplaint complaint;
-	private double tick;
+	private int tick;
 	
 	/**
 	 * Constructor of comments.
@@ -41,14 +42,13 @@ public class Comment implements IContent {
 	 * @param section
 	 * 			Section where the comment is in.
 	 */
-	public Comment(int id, int contentType, String file, String url, String message,
-			int section, String contentTypeDesc, double timeStep) {
+	public Comment(int id, int contentType, String file, String url, String message, int section, String contentTypeDesc){
 		this.id = id;
 		this.type = contentType;
 		this.message = message;
 		this.section = section;
 		this.typeDesc = contentTypeDesc;
-		this.tick = timeStep;
+		this.tick = (int) RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
 	}
 	
 	/**
@@ -134,14 +134,4 @@ public class Comment implements IContent {
 	public void setViolatedNorm(Norm violatedNorm) {
 		this.violatedNorm = violatedNorm;
 	}
-
-	@Override
-  public double getTick() {
-		return this.tick;
-  }
-
-	@Override
-  public void setTick(double tick) {
-	  this.tick = tick;
-  }
 }

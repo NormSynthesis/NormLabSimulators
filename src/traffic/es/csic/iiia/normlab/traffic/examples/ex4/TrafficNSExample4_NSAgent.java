@@ -3,9 +3,12 @@ package es.csic.iiia.normlab.traffic.examples.ex4;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.csic.iiia.normlab.traffic.TrafficSimulator;
 import es.csic.iiia.normlab.traffic.agent.TrafficNormSynthesisAgent;
 import es.csic.iiia.normlab.traffic.agent.monitor.TrafficCamera;
 import es.csic.iiia.normlab.traffic.metrics.TrafficMetrics;
+import es.csic.iiia.normlab.traffic.normsynthesis.TrafficDomainFunctions;
+import es.csic.iiia.normlab.traffic.normsynthesis.TrafficNormSynthesisSettings;
 import es.csic.iiia.nsm.IncorrectSetupException;
 import es.csic.iiia.nsm.NormSynthesisMachine;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
@@ -27,6 +30,8 @@ public class TrafficNSExample4_NSAgent implements TrafficNormSynthesisAgent {
 	//---------------------------------------------------------------------------
 
 	private NormSynthesisMachine nsm;
+	private NormSynthesisSettings nsmSettings;
+	private DomainFunctions dmFunctions;
 	private NormativeSystem normativeSystem;
 	private List<Norm> addedNorms;
 	private List<Norm> removedNorms;
@@ -42,8 +47,6 @@ public class TrafficNSExample4_NSAgent implements TrafficNormSynthesisAgent {
 			PredicatesDomains predDomains, DomainFunctions dmFunctions, 
 			List<TrafficCamera> cameras) {
 		
-		/* Create the normative system, which will contain the norms 
-		 * available to the agents */
 		this.normativeSystem = new NormativeSystem();
 		
 		/* Create lists to control additions and
@@ -51,10 +54,13 @@ public class TrafficNSExample4_NSAgent implements TrafficNormSynthesisAgent {
 		this.addedNorms = new ArrayList<Norm>();
 		this.removedNorms = new ArrayList<Norm>();
 		
+		/* Create norm synthesis settings */
+		this.nsmSettings = new TrafficNormSynthesisSettings();
+		
 		/* Create norm synthesis machine */
-		this.nsm = new NormSynthesisMachine(nsSettings, predDomains,
+		this.nsm = new NormSynthesisMachine(nsmSettings, predDomains,
 				dmFunctions, true, 0l);
-
+		
 		/* Add sensors to the monitor of the norm synthesis machine */
 		for(TrafficCamera camera : cameras) {
 			this.nsm.addSensor(camera);	
@@ -64,10 +70,9 @@ public class TrafficNSExample4_NSAgent implements TrafficNormSynthesisAgent {
 		TrafficMetrics nsMetrics = new TrafficMetrics(nsm);
 		
 		/* Create the norm synthesis strategy */
-		TrafficNSExample4_NSStrategy strategy =	
-				new TrafficNSExample4_NSStrategy(this.nsm, nsMetrics);
+		TrafficNSExample4_NSStrategy strategy =	new TrafficNSExample4_NSStrategy(this.nsm);
 		
-		/* Setup the norm synthesis machine with the created strategy */
+		/* Setup the norm synthesis machine */
 		this.nsm.setup(strategy, nsMetrics, null, null);
 	}
 

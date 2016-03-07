@@ -96,11 +96,6 @@ public class CarContextFactory {
 					}						
 				}
 				
-				/* Agent's context out of bounds */
-				else {
-					return null;
-				}
-				
 				if((innerLoopXOp != 0 && x==x2)|| innerLoopYOp != 0 && y == y2)
 					break;
 				x+=innerLoopXOp;
@@ -138,7 +133,6 @@ public class CarContextFactory {
 			}
 		}
 		context.pack(this.factFactory);
-		
 		return context;
 	}
 
@@ -151,7 +145,7 @@ public class CarContextFactory {
 	{
 		int numRows = CarContext.NUM_ROWS;
 		int numCols = CarContext.NUM_COLS; 
-				
+		
 		// Calculate coordinates
 		switch(dir) {
 		case North:

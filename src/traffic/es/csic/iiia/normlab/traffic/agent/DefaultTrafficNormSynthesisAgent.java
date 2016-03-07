@@ -36,7 +36,7 @@ implements TrafficNormSynthesisAgent {
 	private NormativeSystem normativeSystem;
 	private List<Norm> addedNorms;
 	private List<Norm> removedNorms;
-	private NormSynthesisMetrics nsMetrics;
+	private TrafficMetrics nsMetrics;
 
 	//---------------------------------------------------------------------------
 	// Methods
@@ -109,11 +109,6 @@ implements TrafficNormSynthesisAgent {
 		for(Norm norm : removedNorms) {
 			this.normativeSystem.remove(norm);
 		}
-
-		//		for(Norm n1 : newNormativeSystem) {
-		//			if(!normativeSystem.contains(n1))
-		//				System.out.println();
-		//		}
 	}
 
 	/**
@@ -138,8 +133,7 @@ implements TrafficNormSynthesisAgent {
 			
 		case 1:			option = NormSynthesisStrategy.Option.IRON;				break;
 		case 2:			option = NormSynthesisStrategy.Option.SIMON;			break;
-		case 3:			option = NormSynthesisStrategy.Option.SIMONPlus;	break;
-		case 4:			option = NormSynthesisStrategy.Option.LION;				break;
+		case 3:			option = NormSynthesisStrategy.Option.LION;				break;
 		}
 
 		/* Setup predefined norm synthesis strategy */

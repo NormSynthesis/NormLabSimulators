@@ -80,13 +80,6 @@ public class CarReasoner extends NormEngine {
 		this.reset();
 
 		/* Add world facts */
-		
-		/* If the context is null, then the agent is
-		 * about getting out of the scenario -> Perform action 'Go' */
-		if(context == null) {
-			return CarAction.Go;
-		}
-
 		SetOfPredicatesWithTerms predicates =  factFactory.generatePredicates(context);
 		this.addFacts(predicates);
 

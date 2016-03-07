@@ -169,14 +169,6 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 	}
 
 	/**
-	 * 
-	 */
-	@Override
-	public boolean isNormGenerationReactiveToConflicts() {
-		return NORM_GENERATION_REACTIVE;
-	}
-
-	/**
 	 * Getter of the NumTicksPerceptionWindow
 	 * 
 	 * @return 0
@@ -316,19 +308,4 @@ public class CommunityNormSynthesisSettings implements NormSynthesisSettings {
 		return (float)NORM_SPEC_THRESHOLD_EPSILON;
 	}
 
-	/**
-	 * 
-	 */
-	@Override
-	public int getMinEvaluationsToClassifyNorms() {
-		return NORMS_MIN_EVALS_CLASSIFY;
-	}
-
-	/**
-	 * 
-	 */
-	@Override
-	public int getMinEvaluationsToClassifyNormGroups() {
-		return 20;
-	}
 }

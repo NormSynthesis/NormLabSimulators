@@ -48,6 +48,7 @@ import es.csic.iiia.normlab.onlinecomm.section.SectionForum;
 import es.csic.iiia.normlab.onlinecomm.section.SectionPhotoVideo;
 import es.csic.iiia.normlab.onlinecomm.section.SectionTheReporter;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
+import es.csic.iiia.nsm.agent.language.TaxonomyOfTerms;
 
 /**
  * Context builder of the simulation
@@ -71,7 +72,6 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	// Schedule parameters
 	private double start = 1, interval = 1, priority = 0;
 	
-	private CommunityNormSynthesisAgent nsAgent;
 	private PredicatesDomains predDomains;
 
 	/**
@@ -86,13 +86,8 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 	public Context<Object> build(Context<Object> context) {
 		CommunityContextBuilder.context = context;
 
-//		random = new Random(); Javi: Cambio esto para las semillas random...
-		
-		Parameters params = RunEnvironment.getInstance().getParameters();
-		int maxAgents = (Integer) params.getValue("maxAgents");	
-		long contentsQueueSize = (Long) params.getValue("ContentsQueueSize");
-		
-		contextData = new ContextData(maxAgents, contentsQueueSize); // TODO: Modificado para la cola de contents
+		random = new Random();
+		contextData = new ContextData(random);
 
 		context.setId("OnlineCommunityContext");
 
@@ -112,18 +107,19 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 						false, contextData.getNumColumns(), 
 						contextData.getNumRows())); 
 
-		/* Save the context data in position 0,0 */
+		//Save the context data in position 0,0
 		context.add(contextData);
 		space.moveTo(contextData, 0, 0);
 		grid.moveTo(contextData, 0, 0);
 
-		/* Make the social web sections */
+		//Make the social web sections
 		makeSections();
+		
+		this.createPredicatesDomains();
 		
 		/* Create norm synthesis agent and metrics */
 		this.createNSMAgent();
-		this.predDomains = this.nsAgent.getPredicatesDomains();
-		
+
 		/* Create online community manager */
 		createManager();
 		int idealNormativeSystemCardinality = 0;
@@ -158,10 +154,12 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		contextData.setIdealNormativeSystemCardinality(idealNormativeSystemCardinality);
 
 		// Read the stop tick from the parameters of the simulation 
+		Parameters params = RunEnvironment.getInstance().getParameters();
 		int stopTick= (Integer) params.getValue("StopTick");		
 		
 		// Edit the simulation to stop at the tick read from the parameter.
 		RunEnvironment.getInstance().endAt(stopTick);
+
 
 		return context;
 	}
@@ -186,12 +184,9 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		CommunityWatcher watcher = new CommunityWatcher(contextData);
 		
 		boolean isGui = !RunEnvironment.getInstance().isBatch();
-		this.nsAgent = new CommunityNormSynthesisAgent(watcher, contextData, seed, isGui);
-		
-		/* Get random and set it in the contextData */
-		random = this.nsAgent.getNormSynthesisMachine().getRandom();
-		contextData.setRandom(random);
-		
+		CommunityNormSynthesisAgent nsAgent =
+				new CommunityNormSynthesisAgent(watcher, contextData, predDomains, seed);
+
 		// Create scheduler for watcher
 		scheduleParams = ScheduleParameters.createRepeating(start, interval, -2);
 		schedule.schedule(scheduleParams, watcher, "perceive");
@@ -202,8 +197,6 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 
 		context.add(nsAgent);
 		context.add(nsAgent.getMetricsManager());
-
-		System.out.println("Starting simulation with random seed " + seed);
 
 		return nsAgent;
 	}
@@ -424,5 +417,262 @@ public class CommunityContextBuilder implements ContextBuilder<Object> {
 		});
 		//		RSApplication.getRSApplicationInstance().removeCustomUserPanel();
 		RSApplication.getRSApplicationInstance().addCustomUserPanel(panel);
+	}
+	
+	/**
+	 * Creates the predicate and their domains for the traffic scenario
+	 */
+	private void createPredicatesDomains() {
+
+		/* Predicate "usr" domain */
+//		TaxonomyOfNaturalNumbers usrPredTaxonomy = new TaxonomyOfNaturalNumbers("usr");
+//		TaxonomyOfNaturalNumbers secPredTaxonomy = new TaxonomyOfNaturalNumbers("sec");
+		
+		/* Predicate "user" domain*/
+		TaxonomyOfTerms usrPredTaxonomy = new TaxonomyOfTerms("usr");
+
+		usrPredTaxonomy.addTerm("*");
+		
+		//TODO los predicados no se ponen con el numero de agentes porque se calculan mas tarde.
+		
+		//for (int i = 0 ; i <= contextData.getMaxAgents() ; i++){
+		for (int i = 0 ; i <= 1000 ; i++){
+			usrPredTaxonomy.addTerm(""+i);
+			usrPredTaxonomy.addRelationship(""+i, "*");
+		}
+//		usrPredTaxonomy.addTerm("0");
+//		usrPredTaxonomy.addTerm("1");
+//		usrPredTaxonomy.addTerm("2");
+//		usrPredTaxonomy.addTerm("3");
+//		usrPredTaxonomy.addTerm("4");
+//		usrPredTaxonomy.addTerm("5");
+//		usrPredTaxonomy.addTerm("6");
+//		usrPredTaxonomy.addTerm("7");
+//		usrPredTaxonomy.addTerm("8");
+//		usrPredTaxonomy.addTerm("9");
+//		usrPredTaxonomy.addTerm("10");
+//		usrPredTaxonomy.addTerm("11");
+//		usrPredTaxonomy.addTerm("12");
+//		usrPredTaxonomy.addTerm("13");
+//		usrPredTaxonomy.addTerm("14");
+//		usrPredTaxonomy.addTerm("15");
+//		usrPredTaxonomy.addTerm("16");
+//		usrPredTaxonomy.addTerm("17");
+//		usrPredTaxonomy.addTerm("18");
+//		usrPredTaxonomy.addTerm("19");
+//		usrPredTaxonomy.addTerm("20");
+//		usrPredTaxonomy.addTerm("21");
+//		usrPredTaxonomy.addTerm("22");
+//		usrPredTaxonomy.addTerm("23");
+//		usrPredTaxonomy.addTerm("24");
+//		usrPredTaxonomy.addTerm("25");
+//		usrPredTaxonomy.addTerm("26");
+//		usrPredTaxonomy.addTerm("27");
+//		usrPredTaxonomy.addTerm("28");
+//		usrPredTaxonomy.addTerm("29");
+//		usrPredTaxonomy.addTerm("30");
+//		usrPredTaxonomy.addTerm("31");
+//		usrPredTaxonomy.addTerm("32");
+//		usrPredTaxonomy.addTerm("33");
+//		usrPredTaxonomy.addTerm("34");
+//		usrPredTaxonomy.addTerm("35");
+//		usrPredTaxonomy.addTerm("36");
+//		usrPredTaxonomy.addTerm("37");
+//		usrPredTaxonomy.addTerm("38");
+//		usrPredTaxonomy.addTerm("39");
+//		usrPredTaxonomy.addTerm("40");
+//		usrPredTaxonomy.addTerm("41");
+//		usrPredTaxonomy.addTerm("42");
+//		usrPredTaxonomy.addTerm("43");
+//		usrPredTaxonomy.addTerm("44");
+//		usrPredTaxonomy.addTerm("45");
+//		usrPredTaxonomy.addTerm("46");
+//		usrPredTaxonomy.addTerm("47");
+//		usrPredTaxonomy.addTerm("48");
+//		usrPredTaxonomy.addTerm("49");
+//		usrPredTaxonomy.addTerm("50");
+//		usrPredTaxonomy.addTerm("51");
+//		usrPredTaxonomy.addTerm("52");
+//		usrPredTaxonomy.addTerm("53");
+//		usrPredTaxonomy.addTerm("54");
+//		usrPredTaxonomy.addTerm("55");
+//		usrPredTaxonomy.addTerm("56");
+//		usrPredTaxonomy.addTerm("57");
+//		usrPredTaxonomy.addTerm("58");
+//		usrPredTaxonomy.addTerm("59");
+//		usrPredTaxonomy.addTerm("60");
+//		usrPredTaxonomy.addTerm("61");
+//		usrPredTaxonomy.addTerm("62");
+//		usrPredTaxonomy.addTerm("63");
+//		usrPredTaxonomy.addTerm("64");
+//		usrPredTaxonomy.addTerm("65");
+//		usrPredTaxonomy.addTerm("66");
+//		usrPredTaxonomy.addTerm("67");
+//		usrPredTaxonomy.addTerm("68");
+//		usrPredTaxonomy.addTerm("69");
+//		usrPredTaxonomy.addTerm("70");
+//		usrPredTaxonomy.addTerm("71");
+//		usrPredTaxonomy.addTerm("72");
+//		usrPredTaxonomy.addTerm("73");
+//		usrPredTaxonomy.addTerm("74");
+//		usrPredTaxonomy.addTerm("75");
+//		usrPredTaxonomy.addTerm("76");
+//		usrPredTaxonomy.addTerm("77");
+//		usrPredTaxonomy.addTerm("78");
+//		usrPredTaxonomy.addTerm("79");
+//		usrPredTaxonomy.addTerm("80");
+//		usrPredTaxonomy.addTerm("81");
+//		usrPredTaxonomy.addTerm("82");
+//		usrPredTaxonomy.addTerm("83");
+//		usrPredTaxonomy.addTerm("84");
+//		usrPredTaxonomy.addTerm("85");
+//		usrPredTaxonomy.addTerm("86");
+//		usrPredTaxonomy.addTerm("87");
+//		usrPredTaxonomy.addTerm("88");
+//		usrPredTaxonomy.addTerm("89");
+//		usrPredTaxonomy.addTerm("90");
+//		usrPredTaxonomy.addTerm("91");
+//		usrPredTaxonomy.addTerm("92");
+//		usrPredTaxonomy.addTerm("93");
+//		usrPredTaxonomy.addTerm("94");
+//		usrPredTaxonomy.addTerm("95");
+//		usrPredTaxonomy.addTerm("96");
+//		usrPredTaxonomy.addTerm("97");
+//		usrPredTaxonomy.addTerm("98");
+//		usrPredTaxonomy.addTerm("99");
+//		usrPredTaxonomy.addTerm("100");
+
+//		
+//		usrPredTaxonomy.addRelationship("0", "*");
+//		usrPredTaxonomy.addRelationship("1", "*");
+//		usrPredTaxonomy.addRelationship("2", "*");
+//		usrPredTaxonomy.addRelationship("3", "*");
+//		usrPredTaxonomy.addRelationship("4", "*");
+//		usrPredTaxonomy.addRelationship("5", "*");
+//		usrPredTaxonomy.addRelationship("6", "*");
+//		usrPredTaxonomy.addRelationship("7", "*");
+//		usrPredTaxonomy.addRelationship("8", "*");
+//		usrPredTaxonomy.addRelationship("9", "*");
+//		usrPredTaxonomy.addRelationship("10", "*");
+//		usrPredTaxonomy.addRelationship("11", "*");
+//		usrPredTaxonomy.addRelationship("12", "*");
+//		usrPredTaxonomy.addRelationship("13", "*");
+//		usrPredTaxonomy.addRelationship("14", "*");
+//		usrPredTaxonomy.addRelationship("15", "*");
+//		usrPredTaxonomy.addRelationship("16", "*");
+//		usrPredTaxonomy.addRelationship("17", "*");
+//		usrPredTaxonomy.addRelationship("18", "*");
+//		usrPredTaxonomy.addRelationship("19", "*");
+//		usrPredTaxonomy.addRelationship("20", "*");
+//		usrPredTaxonomy.addRelationship("21", "*");
+//		usrPredTaxonomy.addRelationship("22", "*");
+//		usrPredTaxonomy.addRelationship("23", "*");
+//		usrPredTaxonomy.addRelationship("24", "*");
+//		usrPredTaxonomy.addRelationship("25", "*");
+//		usrPredTaxonomy.addRelationship("26", "*");
+//		usrPredTaxonomy.addRelationship("27", "*");
+//		usrPredTaxonomy.addRelationship("28", "*");
+//		usrPredTaxonomy.addRelationship("29", "*");
+//		usrPredTaxonomy.addRelationship("30", "*");
+//		usrPredTaxonomy.addRelationship("31", "*");
+//		usrPredTaxonomy.addRelationship("32", "*");
+//		usrPredTaxonomy.addRelationship("33", "*");
+//		usrPredTaxonomy.addRelationship("34", "*");
+//		usrPredTaxonomy.addRelationship("35", "*");
+//		usrPredTaxonomy.addRelationship("36", "*");
+//		usrPredTaxonomy.addRelationship("37", "*");
+//		usrPredTaxonomy.addRelationship("38", "*");
+//		usrPredTaxonomy.addRelationship("39", "*");
+//		usrPredTaxonomy.addRelationship("40", "*");
+//		usrPredTaxonomy.addRelationship("41", "*");
+//		usrPredTaxonomy.addRelationship("42", "*");
+//		usrPredTaxonomy.addRelationship("43", "*");
+//		usrPredTaxonomy.addRelationship("44", "*");
+//		usrPredTaxonomy.addRelationship("45", "*");
+//		usrPredTaxonomy.addRelationship("46", "*");
+//		usrPredTaxonomy.addRelationship("47", "*");
+//		usrPredTaxonomy.addRelationship("48", "*");
+//		usrPredTaxonomy.addRelationship("49", "*");
+//		usrPredTaxonomy.addRelationship("50", "*");
+//		usrPredTaxonomy.addRelationship("51", "*");
+//		usrPredTaxonomy.addRelationship("52", "*");
+//		usrPredTaxonomy.addRelationship("53", "*");
+//		usrPredTaxonomy.addRelationship("54", "*");
+//		usrPredTaxonomy.addRelationship("55", "*");
+//		usrPredTaxonomy.addRelationship("56", "*");
+//		usrPredTaxonomy.addRelationship("57", "*");
+//		usrPredTaxonomy.addRelationship("58", "*");
+//		usrPredTaxonomy.addRelationship("59", "*");
+//		usrPredTaxonomy.addRelationship("60", "*");
+//		usrPredTaxonomy.addRelationship("61", "*");
+//		usrPredTaxonomy.addRelationship("62", "*");
+//		usrPredTaxonomy.addRelationship("63", "*");
+//		usrPredTaxonomy.addRelationship("64", "*");
+//		usrPredTaxonomy.addRelationship("65", "*");
+//		usrPredTaxonomy.addRelationship("66", "*");
+//		usrPredTaxonomy.addRelationship("67", "*");
+//		usrPredTaxonomy.addRelationship("68", "*");
+//		usrPredTaxonomy.addRelationship("69", "*");
+//		usrPredTaxonomy.addRelationship("70", "*");
+//		usrPredTaxonomy.addRelationship("71", "*");
+//		usrPredTaxonomy.addRelationship("72", "*");
+//		usrPredTaxonomy.addRelationship("73", "*");
+//		usrPredTaxonomy.addRelationship("74", "*");
+//		usrPredTaxonomy.addRelationship("75", "*");
+//		usrPredTaxonomy.addRelationship("76", "*");
+//		usrPredTaxonomy.addRelationship("77", "*");
+//		usrPredTaxonomy.addRelationship("78", "*");
+//		usrPredTaxonomy.addRelationship("79", "*");
+//		usrPredTaxonomy.addRelationship("80", "*");
+//		usrPredTaxonomy.addRelationship("81", "*");
+//		usrPredTaxonomy.addRelationship("82", "*");
+//		usrPredTaxonomy.addRelationship("83", "*");
+//		usrPredTaxonomy.addRelationship("84", "*");
+//		usrPredTaxonomy.addRelationship("85", "*");
+//		usrPredTaxonomy.addRelationship("86", "*");
+//		usrPredTaxonomy.addRelationship("87", "*");
+//		usrPredTaxonomy.addRelationship("88", "*");
+//		usrPredTaxonomy.addRelationship("89", "*");
+//		usrPredTaxonomy.addRelationship("90", "*");
+//		usrPredTaxonomy.addRelationship("91", "*");
+//		usrPredTaxonomy.addRelationship("92", "*");
+//		usrPredTaxonomy.addRelationship("93", "*");
+//		usrPredTaxonomy.addRelationship("94", "*");
+//		usrPredTaxonomy.addRelationship("95", "*");
+//		usrPredTaxonomy.addRelationship("96", "*");
+//		usrPredTaxonomy.addRelationship("97", "*");
+//		usrPredTaxonomy.addRelationship("98", "*");
+//		usrPredTaxonomy.addRelationship("99", "*");
+//		usrPredTaxonomy.addRelationship("100", "*");
+
+		/* Predicate "section" domain*/
+		TaxonomyOfTerms secPredTaxonomy = new TaxonomyOfTerms("sec");
+		secPredTaxonomy.addTerm("*");
+		secPredTaxonomy.addTerm("1");
+		secPredTaxonomy.addTerm("2");
+		secPredTaxonomy.addTerm("3");
+		
+		secPredTaxonomy.addRelationship("1", "*");
+		secPredTaxonomy.addRelationship("2", "*");
+		secPredTaxonomy.addRelationship("3", "*");
+		
+		/* Predicate "content" domain*/
+		TaxonomyOfTerms cntTypePredTaxonomy = new TaxonomyOfTerms("cnt");
+		cntTypePredTaxonomy.addTerm("correct");
+		cntTypePredTaxonomy.addTerm("spam");
+		cntTypePredTaxonomy.addTerm("porn");
+		cntTypePredTaxonomy.addTerm("violent");
+		cntTypePredTaxonomy.addTerm("insult");
+		
+		cntTypePredTaxonomy.addRelationship("correct", "*");
+		cntTypePredTaxonomy.addRelationship("spam", "*");
+		cntTypePredTaxonomy.addRelationship("porn", "*");
+		cntTypePredTaxonomy.addRelationship("violent", "*");
+		cntTypePredTaxonomy.addRelationship("insult", "*");
+		
+		this.predDomains = new PredicatesDomains();
+		this.predDomains.addPredicateDomain("usr", usrPredTaxonomy);
+		this.predDomains.addPredicateDomain("sec", secPredTaxonomy);
+		this.predDomains.addPredicateDomain("cnt", cntTypePredTaxonomy);
 	}
 }

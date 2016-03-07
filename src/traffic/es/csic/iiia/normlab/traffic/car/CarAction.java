@@ -1,6 +1,6 @@
 package es.csic.iiia.normlab.traffic.car;
 
-import es.csic.iiia.nsm.agent.EnvironmentAgentAction;
+import es.csic.iiia.nsm.agent.AgentAction;
 
 /**
  * Defines an action to be taken by an agent
@@ -8,7 +8,7 @@ import es.csic.iiia.nsm.agent.EnvironmentAgentAction;
  * @author Javier Morales (jmoralesmat@gmail.com)
  *
  */
-public enum CarAction implements EnvironmentAgentAction {
+public enum CarAction implements AgentAction {
 
 	Nothing, Go, Stop, Accelerate, Decelerate, TurnLeft, TurnRight;
 

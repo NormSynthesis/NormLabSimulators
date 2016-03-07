@@ -1,8 +1,8 @@
 package es.csic.iiia.normlab.onlinecomm.agents.norms;
 
 import java.util.Collections;
-import java.util.concurrent.Semaphore;
 
+import repast.simphony.engine.environment.RunEnvironment;
 import es.csic.iiia.normlab.onlinecomm.context.ContextData;
 import es.csic.iiia.normlab.onlinecomm.nsm.CommunityNormSynthesisSettings;
 import es.csic.iiia.normlab.onlinecomm.nsm.agent.CommunityAgentAction;
@@ -24,14 +24,14 @@ public class CommunityAgentReasoner extends NormEngine {
 	// Attributes																															
 	//------------------------------------------------------------
 
-	/* The state of the reasoner */
+	/**
+	 * The state of the reasoner
+	 */
 	private CommunityAgentReasonerState state;
 
-	/* Since we use an unique reasoner for all the agents, we must
-	 * synchronize the access to the method decideAction() */
-	private Semaphore sync;
-	
-	/* Norms to violate or to apply */
+	/**
+	 * Template to define a car (and noCar) and its properties for JESS rules
+	 */
 	private Norm normToApply;
 	private Norm normToViolate;
 	private ContextData contextData;
@@ -49,9 +49,7 @@ public class CommunityAgentReasoner extends NormEngine {
 		super(predDomains);
 		
 		this.state = CommunityAgentReasonerState.NoNormActivated;
-		this.contextData = contextData;
-		
-		this.sync = new Semaphore(1);
+		this.contextData = contextData; 
 	}
 
 	//---------------------------------------------------------------------------
@@ -62,14 +60,6 @@ public class CommunityAgentReasoner extends NormEngine {
 	 * Does reasoning to activate rules in base of the facts in the knowledge base 
 	 */
 	public CommunityAgentAction decideAction(CommunityAgentContext context) {
-		CommunityAgentAction returnAction = CommunityAgentAction.Upload;
-		
-		try {
-	    this.sync.acquire();
-    } catch (InterruptedException e) {
-	    e.printStackTrace();
-    }
-		
 		this.state = CommunityAgentReasonerState.NoNormActivated;
 		boolean violate;
 		int violateProb;
@@ -79,7 +69,11 @@ public class CommunityAgentReasoner extends NormEngine {
 		// Add world facts
 		SetOfPredicatesWithTerms predicates = context.getDescription();
 		
-		/* Add agents' context fact */
+//		CommunityNormSynthesisAgent.
+//				getFactFactory().generatePredicates(context);
+//		
+//		context.getDescription();
+//		
 		this.addFacts(predicates);
 
 		// Reason about applicable norms
@@ -89,59 +83,37 @@ public class CommunityAgentReasoner extends NormEngine {
 		Collections.sort(applicableNorms);
 
 		// Obtain next supposed action to do according to the norm specification
-		int numApplNorms = applicableNorms.size();
-		boolean decided = false;
-		int i=0;
-		
-		while(i<numApplNorms && !decided) {
-			Norm n = applicableNorms.get(i);
-			
+		for(Norm n : applicableNorms){
 			violate = false;
-			violateProb = (int)(CommunityNormSynthesisSettings.SIM_NORM_VIOLATION_RATE * 100);
+
+			if(RunEnvironment.getInstance().isBatch()){
+				// Decide if applying the norm or not 
+				violateProb = (int)(CommunityNormSynthesisSettings.SIM_NORM_VIOLATION_RATE * 100);
+			}else{
+				// Decide if applying the norm or not 
+				violateProb = (int)(CommunityNormSynthesisSettings.SIM_NORM_VIOLATION_RATE * 100);
+			}
 			
-			int num = this.contextData.nextIntRandom(100) + 1;
+			int num = this.contextData.nextIntRandom(100)+1;
 			violate = (num <= violateProb) ? true : false;
 
 			// Randomly choose if applying the norm or not. Case apply the norm
-			if(violate) {
-				decided = true;
+			if(violate){
 				this.normToViolate = n;
 				state = CommunityAgentReasonerState.NormWillBeViolated;
-				returnAction = CommunityAgentAction.Upload;
-			}
-			else{
-				decided = true;
+				
+				return CommunityAgentAction.Upload;
+			}else{
 				this.normToApply = n;
 				state = CommunityAgentReasonerState.NormWillBeApplied;
-				returnAction = CommunityAgentAction.Nothing;
+
+				return CommunityAgentAction.Nothing;
 			}
 		}
-		
-//		for(Norm n : applicableNorms) {
-//			violate = false;
-//			violateProb = (int)(CommunityNormSynthesisSettings.SIM_NORM_VIOLATION_RATE * 100);
-//			
-//			int num = this.contextData.nextIntRandom(100) + 1;
-//			violate = (num <= violateProb) ? true : false;
-//
-//			// Randomly choose if applying the norm or not. Case apply the norm
-//			if(violate) {
-//				this.normToViolate = n;
-//				state = CommunityAgentReasonerState.NormWillBeViolated;
-//				returnAction = CommunityAgentAction.Upload;
-//			}
-//			else{
-//				this.normToApply = n;
-//				state = CommunityAgentReasonerState.NormWillBeApplied;
-//				returnAction = CommunityAgentAction.Nothing;
-//			}
-//		}
 		// Let the facts base empty and return the action chosen by the agent
 		applicableNorms.clear();
-    
-		this.sync.release();
-		
-		return returnAction;
+
+		return CommunityAgentAction.Upload;
 	}
 	
 	/**

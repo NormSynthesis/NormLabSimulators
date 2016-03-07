@@ -6,7 +6,7 @@ import java.util.List;
 import es.csic.iiia.normlab.onlinecomm.content.IContent;
 import es.csic.iiia.normlab.onlinecomm.nsm.CommunityNormSynthesisAgent;
 import es.csic.iiia.normlab.onlinecomm.nsm.perception.CommunityView;
-import es.csic.iiia.nsm.agent.EnvironmentAgentContext;
+import es.csic.iiia.nsm.agent.AgentContext;
 import es.csic.iiia.nsm.agent.language.PredicatesDomains;
 import es.csic.iiia.nsm.agent.language.SetOfPredicatesWithTerms;
 import es.csic.iiia.nsm.config.DomainFunctions;
@@ -51,7 +51,7 @@ public class CommunityNormEngine extends NormEngine {
 		fakeUploads.add(content);
 
 		CommunityView fakeView = new CommunityView(fakeUploads, null, null);
-		EnvironmentAgentContext context = this.dmFunctions.agentContextFunction(agentId, fakeView);
+		AgentContext context = this.dmFunctions.agentContextFunction(agentId, fakeView);
 		SetOfPredicatesWithTerms predicates = CommunityNormSynthesisAgent.
 				getFactFactory().generatePredicates(context);
 		
